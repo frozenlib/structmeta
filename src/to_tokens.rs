@@ -12,11 +12,11 @@ pub fn derive_to_tokens(input: DeriveInput) -> Result<TokenStream> {
         }
     };
     let ts = quote! {
-        fn to_tokens(&self, tokens: &mut TokenStream) {
+        fn to_tokens(&self, tokens: &mut ::proc_macro2::TokenStream) {
             #ts
         }
     };
-    let ts = impl_trait_result(&input, &parse_quote!(quote::ToTokens), &[], ts, false)?;
+    let ts = impl_trait_result(&input, &parse_quote!(::quote::ToTokens), &[], ts, false)?;
     Ok(ts)
 }
 fn code_from_struct(data: &DataStruct) -> Result<TokenStream> {
@@ -53,7 +53,7 @@ fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
         Fields::Unnamed(_) => {
             for (index, field) in fields.iter().enumerate() {
                 let var_ident = to_var_name(&field.ident, Some(index));
-                vars.push(var_ident);
+                vars.push(quote!(#var_ident));
             }
             quote!( #self_path( #(#vars,)*))
         }
@@ -61,7 +61,7 @@ fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
             for field in fields.iter() {
                 let field_ident = &field.ident;
                 let var_ident = to_var_name(&field_ident, None);
-                vars.push(var_ident);
+                vars.push(quote!(#field_ident : #var_ident));
             }
             quote!( #self_path { #(#vars,)* } )
         }
