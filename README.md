@@ -1,4 +1,7 @@
-# structmeta
+# StructMeta
+
+Parse Rust's attribute by defining a struct.
+This crate was inspired by [`StructOpt`](https://github.com/TeXitoi/structopt).
 
 ## License
 
