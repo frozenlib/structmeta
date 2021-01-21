@@ -1,5 +1,9 @@
 # StructMeta
 
+[![Crates.io](https://img.shields.io/crates/v/structmeta.svg)](https://crates.io/crates/structmeta)
+[![Docs.rs](https://docs.rs/structmeta/badge.svg)](https://docs.rs/structmeta/)
+[![Actions Status](https://github.com/frozenlib/structmeta/workflows/CI/badge.svg)](https://github.com/frozenlib/structmeta/actions)
+
 Parse Rust's attribute by defining a struct.
 This crate was inspired by [`StructOpt`](https://github.com/TeXitoi/structopt).
 
