@@ -224,7 +224,7 @@ fn paren_nested() {
 }
 
 #[test]
-fn paren_close2() {
+fn paren_close_many() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("(")]
@@ -247,6 +247,32 @@ fn paren_close2() {
         value: parse_quote!(1 + 2),
     };
     let ts = quote!(("abc" ( = )) 1 + 2 );
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn paren_close_open() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token1: syn::token::Paren,
+        key: syn::LitStr,
+
+        #[to_tokens(")(")]
+        brace_token2: syn::token::Paren,
+
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token1: Default::default(),
+        key: parse_quote!("abc"),
+        brace_token2: Default::default(),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(("abc")( = 1 + 2 ));
     assert_eq_ts(s, ts);
 }
 
