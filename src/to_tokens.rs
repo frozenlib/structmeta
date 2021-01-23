@@ -1,4 +1,4 @@
-use crate::{syn_utils::*, to_tokens_attribute::ToTokensAttribute};
+use crate::{syn_utils::*, to_tokens_attribute::*};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::unreachable;
@@ -115,14 +115,6 @@ impl<'a> Scope<'a> {
         None
     }
 }
-fn to_close(c: char) -> char {
-    match c {
-        '(' => ')',
-        '[' => ']',
-        '{' => '}',
-        _ => panic!("not found closing delimiter for {}", c),
-    }
-}
 fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
     let mut scopes = vec![Scope::new(None)];
     for (index, field) in fields.iter().enumerate() {
@@ -148,11 +140,15 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
                                 if let Some(code) = scope.into_code(Some(c)) {
                                     scopes.last_mut().unwrap().ts.extend(code);
                                 } else {
-                                    bail!(token.span()=> "mismatched closing delimiter.");
+                                    bail!(token.span(), "mismatched closing delimiter `{}`.", c);
                                 }
                             }
                             _ => {
-                                bail!(token.span() => "expected '(', ')', '[', ']', '{{' or '}}', found `{}`.", c);
+                                bail!(
+                                    token.span(),
+                                    "expected '(', ')', '[', ']', '{{' or '}}', found `{}`.",
+                                    c
+                                );
                             }
                         }
                     }

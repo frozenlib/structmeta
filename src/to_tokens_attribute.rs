@@ -51,3 +51,12 @@ impl Parse for ToTokensAttributeArg {
         }
     }
 }
+
+pub fn to_close(c: char) -> char {
+    match c {
+        '(' => ')',
+        '[' => ']',
+        '{' => '}',
+        _ => panic!("not found closing delimiter for {}", c),
+    }
+}

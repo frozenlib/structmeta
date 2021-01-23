@@ -32,6 +32,140 @@ fn derive_for_enum() {
     assert_parse::<TestEnum>(quote!(+ 1 + 2));
     assert_parse::<TestEnum>(quote!());
 }
+#[test]
+fn brace_all() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("{")]
+        brace_token: syn::token::Brace,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+
+    assert_parse::<TestStruct>(quote!({ "abc" = 1 + 2 }));
+}
+
+#[test]
+fn brace_close() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("{")]
+        brace_token: syn::token::Brace,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens("}")]
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!({ "abc" = } 1 + 2));
+}
+
+#[test]
+fn paren_all() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        paren_token: syn::token::Paren,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(("abc" = 1 + 2)));
+}
+
+#[test]
+fn paren_close() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token: syn::token::Paren,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens(")")]
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(("abc" = ) 1 + 2 ));
+}
+
+#[test]
+fn paren_nested() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token1: syn::token::Paren,
+        key: syn::LitStr,
+
+        #[to_tokens("(")]
+        brace_token2: syn::token::Paren,
+
+        eq_token: syn::Token![=],
+        #[to_tokens(")")]
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(("abc" ( = ) 1 + 2 )));
+}
+
+#[test]
+fn paren_close_many() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token1: syn::token::Paren,
+        key: syn::LitStr,
+
+        #[to_tokens("(")]
+        brace_token2: syn::token::Paren,
+
+        eq_token: syn::Token![=],
+        #[to_tokens("))")]
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(("abc" ( = )) 1 + 2 ));
+}
+
+#[test]
+fn paren_close_open() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token1: syn::token::Paren,
+        key: syn::LitStr,
+
+        #[to_tokens(")(")]
+        brace_token2: syn::token::Paren,
+
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(("abc")( = 1 + 2 )));
+}
+
+#[test]
+fn bracket_all() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("[")]
+        paren_token: syn::token::Bracket,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(["abc" = 1 + 2]));
+}
+
+#[test]
+fn bracket_close() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("[")]
+        brace_token: syn::token::Bracket,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens("]")]
+        value: syn::Expr,
+    }
+    assert_parse::<TestStruct>(quote!(["abc" = ] 1 + 2 ));
+}
 
 fn assert_parse<T: Parse + ToTokens>(ts: TokenStream) {
     let value: T = syn::parse2(ts.clone()).expect("syn::parse2 failed.");

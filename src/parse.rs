@@ -1,4 +1,6 @@
-use crate::syn_utils::*;
+use std::unreachable;
+
+use crate::{syn_utils::*, to_tokens_attribute::*};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{
@@ -14,7 +16,7 @@ use syn::{
 pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
     let mut dump = false;
     for attr in &input.attrs {
-        if attr.path.is_ident("to_tokens") {
+        if attr.path.is_ident("parse") {
             let attr: ParseAttribute = parse2(attr.tokens.clone())?;
             dump = dump || attr.dump.is_some();
         }
@@ -62,14 +64,72 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
     });
     Ok(ts)
 }
+struct Scope {
+    input: Ident,
+    close: Option<char>,
+}
 fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
-    let mut vars = Vec::new();
+    let mut scopes = vec![Scope {
+        input: parse_quote!(input),
+        close: None,
+    }];
+    let mut ts = TokenStream::new();
     let mut inits = Vec::new();
     for (index, field) in fields.iter().enumerate() {
         let var_ident = to_var_ident(&field.ident, Some(index));
-        vars.push(
-            quote_spanned!(field.span()=>let #var_ident = ::syn::parse::Parse::parse(input)?;),
-        );
+        let mut use_parse = true;
+        for attr in &field.attrs {
+            if attr.path.is_ident("to_tokens") {
+                let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
+                for token in attr.token {
+                    for c in token.value().chars() {
+                        match c {
+                            '(' | '[' | '{' => {
+                                use_parse = false;
+                                let macro_ident: Ident = match c {
+                                    '(' => parse_quote!(parenthesized),
+                                    '[' => parse_quote!(bracketed),
+                                    '{' => parse_quote!(braced),
+                                    _ => unreachable!(),
+                                };
+                                let input_old = &scopes.last().unwrap().input;
+                                let input = format_ident!("input{}", var_ident);
+                                let code = quote_spanned!(field.span()=>
+                                    let #input;
+                                    let #var_ident = ::syn::#macro_ident!(#input in #input_old);
+                                    let #input = &#input;
+                                );
+                                ts.extend(code);
+                                scopes.push(Scope {
+                                    close: Some(to_close(c)),
+                                    input,
+                                });
+                            }
+                            ')' | ']' | '}' => {
+                                if scopes.last().unwrap().close == Some(c) {
+                                    scopes.pop();
+                                } else {
+                                    bail!(token.span(), "mismatched closing delimiter `{}`.", c);
+                                }
+                            }
+                            _ => {
+                                bail!(
+                                    token.span(),
+                                    "expected '(', ')', '[', ']', '{{' or '}}', found `{}`.",
+                                    c
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if use_parse {
+            let input = &scopes.last().unwrap().input;
+            let code =
+                quote_spanned!(field.span()=>let #var_ident = ::syn::parse::Parse::parse(#input)?;);
+            ts.extend(code);
+        }
         if let Some(field_ident) = &field.ident {
             inits.push(quote!(#field_ident : #var_ident));
         } else {
@@ -82,7 +142,7 @@ fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStre
         Fields::Unit => quote!(),
     };
     Ok(quote! {
-        #(#vars)*
+        #ts
         Ok(#self_path #init)
     })
 }
@@ -111,7 +171,7 @@ impl Parse for ParseAttribute {
             match arg {
                 ParseAttributeArg::Peek(peek_arg) => {
                     if peek.is_some() {
-                        bail!(peek_arg.span() => "peek(..) is already specified.");
+                        bail!(peek_arg.span(), "peek(..) is already specified.");
                     }
                     peek = Some(peek_arg);
                 }
