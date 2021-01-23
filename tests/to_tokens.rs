@@ -144,11 +144,151 @@ fn brace_close() {
     }
 
     let s = TestStruct {
-        brace_token: syn::token::Brace::default(),
+        brace_token: Default::default(),
         key: parse_quote!("abc"),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
     };
     let ts = quote!({ "abc" = } 1 + 2 );
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn paren_all() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        paren_token: syn::token::Paren,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        paren_token: Default::default(),
+        key: parse_quote!("abc"),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(("abc" = 1 + 2));
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn paren_close() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token: syn::token::Paren,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens(")")]
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token: Default::default(),
+        key: parse_quote!("abc"),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(("abc" = ) 1 + 2 );
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn paren_nested() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token1: syn::token::Paren,
+        key: syn::LitStr,
+
+        #[to_tokens("(")]
+        brace_token2: syn::token::Paren,
+
+        eq_token: syn::Token![=],
+        #[to_tokens(")")]
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token1: Default::default(),
+        key: parse_quote!("abc"),
+        brace_token2: Default::default(),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(("abc" ( = ) 1 + 2 ));
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn paren_close2() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token1: syn::token::Paren,
+        key: syn::LitStr,
+
+        #[to_tokens("(")]
+        brace_token2: syn::token::Paren,
+
+        eq_token: syn::Token![=],
+        #[to_tokens(")", ")")]
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token1: Default::default(),
+        key: parse_quote!("abc"),
+        brace_token2: Default::default(),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(("abc" ( = )) 1 + 2 );
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn bracket_all() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("[")]
+        paren_token: syn::token::Bracket,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        paren_token: Default::default(),
+        key: parse_quote!("abc"),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(["abc" = 1 + 2]);
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn bracket_close() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("[")]
+        brace_token: syn::token::Bracket,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens("]")]
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token: Default::default(),
+        key: parse_quote!("abc"),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!(["abc" = ] 1 + 2 );
     assert_eq_ts(s, ts);
 }
