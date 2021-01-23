@@ -1,10 +1,10 @@
 use crate::syn_utils::*;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
-    parse_quote,
+    parse2, parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
     token::Paren,
@@ -12,6 +12,14 @@ use syn::{
 };
 
 pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
+    let mut dump = false;
+    for attr in &input.attrs {
+        if attr.path.is_ident("to_tokens") {
+            let attr: ParseAttribute = parse2(attr.tokens.clone())?;
+            dump = dump || attr.dump.is_some();
+        }
+    }
+
     let ts = match &input.data {
         Data::Struct(data) => code_from_struct(&data)?,
         Data::Enum(data) => code_from_enum(&input.ident, &data)?,
@@ -24,7 +32,7 @@ pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
             #ts
         }
     };
-    let ts = impl_trait_result(&input, &parse_quote!(::syn::parse::Parse), &[], ts, false)?;
+    let ts = impl_trait_result(&input, &parse_quote!(::syn::parse::Parse), &[], ts, dump)?;
     Ok(ts)
 }
 
@@ -87,41 +95,50 @@ fn to_var_ident(ident: &Option<Ident>, index: Option<usize>) -> Ident {
     }
 }
 
+struct ParseAttribute {
+    dump: Option<Span>,
+    peek: Option<PeekArg>,
+}
+impl Parse for ParseAttribute {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let content;
+        parenthesized!(content in input);
+        let mut peek = None;
+        let mut dump = None;
+        let args: Punctuated<ParseAttributeArg, Token![,]> =
+            content.parse_terminated(ParseAttributeArg::parse)?;
+        for arg in args.into_iter() {
+            match arg {
+                ParseAttributeArg::Peek(peek_arg) => {
+                    if peek.is_some() {
+                        bail!(peek_arg.span() => "peek(..) is already specified.");
+                    }
+                    peek = Some(peek_arg);
+                }
+                ParseAttributeArg::Dump(kw_dump) => {
+                    dump = Some(kw_dump.span());
+                }
+            }
+        }
+        Ok(Self { peek, dump })
+    }
+}
 mod kw {
     use syn::custom_keyword;
     custom_keyword!(peek);
+    custom_keyword!(dump);
 }
 
-// struct ParseAttribute {
-//     peek: Option<PeekArg>,
-// }
-// impl Parse for ParseAttribute {
-//     fn parse(input: ParseStream) -> Result<Self> {
-//         let content;
-//         parenthesized!(content in input);
-//         let mut peek = None;
-//         let args: Punctuated<ParseAttributeArg, Token![,]> =
-//             content.parse_terminated(ParseAttributeArg::parse)?;
-//         for arg in args.into_iter() {
-//             match arg {
-//                 ParseAttributeArg::Peek(peek_arg) => {
-//                     if peek.is_some() {
-//                         bail!(peek_arg.span() => "peek(..) is already specified.");
-//                     }
-//                     peek = Some(peek_arg);
-//                 }
-//             }
-//         }
-//         Ok(Self { peek })
-//     }
-// }
 enum ParseAttributeArg {
     Peek(PeekArg),
+    Dump(kw::dump),
 }
 impl Parse for ParseAttributeArg {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(kw::peek) && input.peek2(Paren) {
-            Ok(Self::Peek(PeekArg::parse(input)?))
+            Ok(Self::Peek(input.parse()?))
+        } else if input.peek(kw::dump) {
+            Ok(Self::Dump(input.parse()?))
         } else {
             Err(input.error("expected `peek(...)`"))
         }
