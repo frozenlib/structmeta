@@ -52,7 +52,7 @@ fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
         Fields::Unit => self_path,
         Fields::Unnamed(_) => {
             for (index, field) in fields.iter().enumerate() {
-                let var_ident = to_var_name(&field.ident, Some(index));
+                let var_ident = to_var_ident(&field.ident, Some(index));
                 vars.push(quote!(#var_ident));
             }
             quote!( #self_path( #(#vars,)*))
@@ -60,7 +60,7 @@ fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
         Fields::Named(_) => {
             for field in fields.iter() {
                 let field_ident = &field.ident;
-                let var_ident = to_var_name(&field_ident, None);
+                let var_ident = to_var_ident(&field_ident, None);
                 vars.push(quote!(#field_ident : #var_ident));
             }
             quote!( #self_path { #(#vars,)* } )
@@ -71,12 +71,12 @@ fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
 fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
     let mut ts = TokenStream::new();
     for (index, field) in fields.iter().enumerate() {
-        let ident = to_var_name(&field.ident, Some(index));
+        let ident = to_var_ident(&field.ident, Some(index));
         ts.extend(quote_spanned!(field.span()=> ::quote::ToTokens::to_tokens(#ident, tokens); ));
     }
     Ok(ts)
 }
-fn to_var_name(ident: &Option<Ident>, index: Option<usize>) -> Ident {
+fn to_var_ident(ident: &Option<Ident>, index: Option<usize>) -> Ident {
     if let Some(ident) = ident {
         format_ident!("_{}", ident)
     } else {
