@@ -116,7 +116,9 @@ impl Parse for ParseAttribute {
                     peek = Some(peek_arg);
                 }
                 ParseAttributeArg::Dump(kw_dump) => {
-                    dump = Some(kw_dump.span());
+                    if dump.is_none() {
+                        dump = Some(kw_dump.span());
+                    }
                 }
             }
         }
