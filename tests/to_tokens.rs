@@ -235,7 +235,7 @@ fn paren_close2() {
         brace_token2: syn::token::Paren,
 
         eq_token: syn::Token![=],
-        #[to_tokens(")", ")")]
+        #[to_tokens("))")]
         value: syn::Expr,
     }
 

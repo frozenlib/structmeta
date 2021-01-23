@@ -87,7 +87,7 @@ struct Scope<'a> {
 struct Surround<'a> {
     ident: Ident,
     field: &'a Field,
-    close: &'static str,
+    close: char,
 }
 impl<'a> Scope<'a> {
     fn new(surround: Option<Surround<'a>>) -> Self {
@@ -98,7 +98,7 @@ impl<'a> Scope<'a> {
     }
 }
 impl<'a> Scope<'a> {
-    fn into_code(self, close: Option<&str>) -> Option<TokenStream> {
+    fn into_code(self, close: Option<char>) -> Option<TokenStream> {
         if let Some(s) = self.surround {
             let mut mismatch = false;
             if let Some(close) = close {
@@ -115,6 +115,14 @@ impl<'a> Scope<'a> {
         None
     }
 }
+fn to_close(c: char) -> char {
+    match c {
+        '(' => ')',
+        '[' => ']',
+        '{' => '}',
+        _ => panic!("not found closing delimiter for {}", c),
+    }
+}
 fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
     let mut scopes = vec![Scope::new(None)];
     for (index, field) in fields.iter().enumerate() {
@@ -124,33 +132,28 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
             if attr.path.is_ident("to_tokens") {
                 let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
                 for token in &attr.token {
-                    let token_value = token.value();
-                    let token_value = token_value.as_str();
-                    match token_value {
-                        "(" | "[" | "{" => {
-                            let close = match token_value {
-                                "(" => ")",
-                                "[" => "]",
-                                "{" => "}",
-                                _ => unreachable!(),
-                            };
-                            scopes.push(Scope::new(Some(Surround {
-                                ident: ident.clone(),
-                                field,
-                                close,
-                            })));
-                            field_to_tokens = false;
-                        }
-                        ")" | "]" | "}" => {
-                            let scope = scopes.pop().unwrap();
-                            if let Some(code) = scope.into_code(Some(token_value)) {
-                                scopes.last_mut().unwrap().ts.extend(code);
-                            } else {
-                                bail!(token.span()=> "mismatched closing delimiter.");
+                    for c in token.value().chars() {
+                        match c {
+                            '(' | '[' | '{' => {
+                                let close = to_close(c);
+                                scopes.push(Scope::new(Some(Surround {
+                                    ident: ident.clone(),
+                                    field,
+                                    close,
+                                })));
+                                field_to_tokens = false;
                             }
-                        }
-                        _ => {
-                            bail!(token.span() => "expected \"(\", \")\", \"[\", \"]\", \"{\" or \"}\".")
+                            ')' | ']' | '}' => {
+                                let scope = scopes.pop().unwrap();
+                                if let Some(code) = scope.into_code(Some(c)) {
+                                    scopes.last_mut().unwrap().ts.extend(code);
+                                } else {
+                                    bail!(token.span()=> "mismatched closing delimiter.");
+                                }
+                            }
+                            _ => {
+                                bail!(token.span() => "expected '(', ')', '[', ']', '{{' or '}}', found `{}`.", c);
+                            }
                         }
                     }
                 }
