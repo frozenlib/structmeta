@@ -4,6 +4,7 @@ extern crate proc_macro;
 mod syn_utils;
 mod parse;
 mod to_tokens;
+mod to_tokens_attribute;
 
 use syn::{parse_macro_input, DeriveInput};
 use syn_utils::*;
