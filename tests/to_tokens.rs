@@ -109,3 +109,46 @@ fn enum_raw_keyword_field() {
     let ts = quote!(abc = 1 + 2);
     assert_eq_ts(s, ts);
 }
+
+#[test]
+fn brace_all() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("{")]
+        brace_token: syn::token::Brace,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token: syn::token::Brace::default(),
+        key: parse_quote!("abc"),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!({ "abc" = 1 + 2 });
+    assert_eq_ts(s, ts);
+}
+
+#[test]
+fn brace_close() {
+    #[derive(ToTokens)]
+    struct TestStruct {
+        #[to_tokens("{")]
+        brace_token: syn::token::Brace,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens("}")]
+        value: syn::Expr,
+    }
+
+    let s = TestStruct {
+        brace_token: syn::token::Brace::default(),
+        key: parse_quote!("abc"),
+        eq_token: parse_quote!(=),
+        value: parse_quote!(1 + 2),
+    };
+    let ts = quote!({ "abc" = } 1 + 2 );
+    assert_eq_ts(s, ts);
+}
