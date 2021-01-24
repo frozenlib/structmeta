@@ -245,6 +245,23 @@ fn parse_any() {
 }
 
 #[test]
+fn peek_bracket() {
+    #[derive(Parse, ToTokens)]
+    enum TestEnum {
+        A {
+            #[parse(peek)]
+            #[to_tokens("[")]
+            braket_token: syn::token::Bracket,
+            eq_token: syn::Token![=],
+            #[to_tokens("]")]
+            #[parse(peek)]
+            name: syn::Ident,
+        },
+    }
+    assert_parse::<TestEnum>(quote!([=] abc));
+}
+
+#[test]
 fn peek_any() {
     #[derive(Parse, ToTokens)]
     enum TestEnum {
