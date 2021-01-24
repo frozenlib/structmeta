@@ -10,7 +10,7 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::Paren,
-    Data, DataEnum, DataStruct, DeriveInput, Fields, Ident, LitStr, Result, Token,
+    Data, DataEnum, DataStruct, DeriveInput, Expr, Fields, Ident, Result, Token,
 };
 
 pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
@@ -39,24 +39,47 @@ pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
 }
 
 fn code_from_struct(data: &DataStruct) -> Result<TokenStream> {
-    code_from_fields(quote!(Self), &data.fields)
+    code_from_fields(quote!(Self), &data.fields, None)
 }
 fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
     let mut ts = TokenStream::new();
     for variant in &data.variants {
         let variant_ident = &variant.ident;
         let fn_ident = format_ident!("_parse_{}", &variant.ident);
-        let fn_expr = code_from_fields(quote!(#self_ident::#variant_ident), &variant.fields)?;
-        ts.extend(quote! {
+        let mut peeks = Vec::new();
+        let fn_expr = code_from_fields(
+            quote!(#self_ident::#variant_ident),
+            &variant.fields,
+            Some(&mut peeks),
+        )?;
+        let fn_def = quote! {
             #[allow(non_snake_case)]
             fn #fn_ident(input: ::syn::parse::ParseStream<'_>) -> ::syn::Result<#self_ident> {
                 #fn_expr
             }
-            let fork = input.fork();
-            if let Ok(value) = #fn_ident(&fork) {
-                ::syn::parse::discouraged::Speculative::advance_to(input, &fork);
-                return Ok(value);
+        };
+        let code = if peeks.is_empty() {
+            quote! {
+                let fork = input.fork();
+                if let Ok(value) = #fn_ident(&fork) {
+                    ::syn::parse::discouraged::Speculative::advance_to(input, &fork);
+                    return Ok(value);
+                }
             }
+        } else {
+            let mut preds = Vec::new();
+            for (index, peek) in peeks.into_iter().enumerate() {
+                preds.push(to_predicate(index, &peek)?);
+            }
+            quote! {
+                if #(#preds )&&* {
+                    return #fn_ident(&input);
+                }
+            }
+        };
+        ts.extend(quote! {
+            #fn_def
+            #code
         });
     }
     ts.extend(quote! {
@@ -64,21 +87,50 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
     });
     Ok(ts)
 }
+fn to_predicate(index: usize, peek: &PeekItem) -> Result<TokenStream> {
+    let peek_ident: Ident = match index {
+        0 => parse_quote!(peek),
+        1 => parse_quote!(peek2),
+        2 => parse_quote!(peek3),
+        _ => bail!(peek.span, "more than three `#[parse(peek)]` was specified."),
+    };
+    let peek_arg = &peek.expr;
+    Ok(quote!(input.#peek_ident(#peek_arg)))
+}
+
 struct Scope {
     input: Ident,
     close: Option<char>,
 }
-fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
+struct PeekItem {
+    span: Span,
+    expr: TokenStream,
+}
+fn to_parse_bracket(c: char) -> Ident {
+    match c {
+        '(' => parse_quote!(parenthesized),
+        '[' => parse_quote!(bracketed),
+        '{' => parse_quote!(braced),
+        _ => unreachable!(),
+    }
+}
+fn code_from_fields(
+    self_path: TokenStream,
+    fields: &Fields,
+    mut peeks: Option<&mut Vec<PeekItem>>,
+) -> Result<TokenStream> {
     let mut scopes = vec![Scope {
         input: parse_quote!(input),
         close: None,
     }];
     let mut ts = TokenStream::new();
     let mut inits = Vec::new();
+    let mut non_peek_field = None;
     for (index, field) in fields.iter().enumerate() {
-        let var_ident = to_var_ident(&field.ident, Some(index));
+        let var_ident = to_var_ident(index, &field.ident);
         let mut use_parse = true;
         for attr in &field.attrs {
+            let mut is_root = scopes.len() == 1;
             if attr.path.is_ident("to_tokens") {
                 let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
                 for token in attr.token {
@@ -86,17 +138,12 @@ fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStre
                         match c {
                             '(' | '[' | '{' => {
                                 use_parse = false;
-                                let macro_ident: Ident = match c {
-                                    '(' => parse_quote!(parenthesized),
-                                    '[' => parse_quote!(bracketed),
-                                    '{' => parse_quote!(braced),
-                                    _ => unreachable!(),
-                                };
+                                let parse_bracket = to_parse_bracket(c);
                                 let input_old = &scopes.last().unwrap().input;
                                 let input = format_ident!("input{}", var_ident);
                                 let code = quote_spanned!(field.span()=>
                                     let #input;
-                                    let #var_ident = ::syn::#macro_ident!(#input in #input_old);
+                                    let #var_ident = ::syn::#parse_bracket!(#input in #input_old);
                                     let #input = &#input;
                                 );
                                 ts.extend(code);
@@ -106,10 +153,12 @@ fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStre
                                 });
                             }
                             ')' | ']' | '}' => {
-                                if scopes.last().unwrap().close == Some(c) {
-                                    scopes.pop();
-                                } else {
+                                if scopes.last().unwrap().close != Some(c) {
                                     bail!(token.span(), "mismatched closing delimiter `{}`.", c);
+                                }
+                                scopes.pop();
+                                if scopes.len() == 1 {
+                                    is_root = true;
                                 }
                             }
                             _ => {
@@ -122,6 +171,34 @@ fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStre
                         }
                     }
                 }
+            }
+            let mut is_peek = false;
+            if attr.path.is_ident("parse") {
+                let attr: ParseAttribute = parse2(attr.tokens.clone())?;
+                if let Some(peek) = attr.peek {
+                    if let Some(peeks) = &mut peeks {
+                        let span = peek.span();
+                        if !is_root {
+                            bail!(span, "`peek` cannot be specified in [], () or {{}}.");
+                        }
+                        if let Some(non_peek_field) = &non_peek_field {
+                            bail!(
+                                span,
+                                "you need to peek all previous tokens. consider specifying `#[parse(peek)]` for field `{}`.",
+                                non_peek_field
+                            );
+                        }
+                        let expr = match peek {
+                            PeekArg::NoToken { .. } => field.ty.to_token_stream(),
+                            PeekArg::WithToken { expr, .. } => expr.to_token_stream(),
+                        };
+                        peeks.push(PeekItem { span, expr });
+                        is_peek = true;
+                    }
+                }
+            }
+            if is_root && !is_peek && non_peek_field.is_none() {
+                non_peek_field = Some(to_display(index, &field.ident));
             }
         }
         if use_parse {
@@ -147,11 +224,18 @@ fn code_from_fields(self_path: TokenStream, fields: &Fields) -> Result<TokenStre
     })
 }
 
-fn to_var_ident(ident: &Option<Ident>, index: Option<usize>) -> Ident {
+fn to_var_ident(index: usize, ident: &Option<Ident>) -> Ident {
     if let Some(ident) = ident {
         format_ident!("_{}", ident)
     } else {
-        format_ident!("_{}", index.unwrap())
+        format_ident!("_{}", index)
+    }
+}
+fn to_display(index: usize, ident: &Option<Ident>) -> String {
+    if let Some(ident) = ident {
+        format!("{}", ident)
+    } else {
+        format!("{}", index)
     }
 }
 
@@ -169,11 +253,11 @@ impl Parse for ParseAttribute {
             content.parse_terminated(ParseAttributeArg::parse)?;
         for arg in args.into_iter() {
             match arg {
-                ParseAttributeArg::Peek(peek_arg) => {
+                ParseAttributeArg::Peek(peek_value) => {
                     if peek.is_some() {
-                        bail!(peek_arg.span(), "peek(..) is already specified.");
+                        bail!(peek_value.span(), "peek(..) is already specified.");
                     }
-                    peek = Some(peek_arg);
+                    peek = Some(peek_value);
                 }
                 ParseAttributeArg::Dump(kw_dump) => {
                     if dump.is_none() {
@@ -197,7 +281,7 @@ enum ParseAttributeArg {
 }
 impl Parse for ParseAttributeArg {
     fn parse(input: ParseStream) -> Result<Self> {
-        if input.peek(kw::peek) && input.peek2(Paren) {
+        if input.peek(kw::peek) {
             Ok(Self::Peek(input.parse()?))
         } else if input.peek(kw::dump) {
             Ok(Self::Dump(input.parse()?))
@@ -206,29 +290,49 @@ impl Parse for ParseAttributeArg {
         }
     }
 }
-struct PeekArg {
-    peek_token: kw::peek,
-    paren_token: Paren,
-    args: Punctuated<LitStr, Token![,]>,
+enum PeekArg {
+    NoToken {
+        peek_token: kw::peek,
+    },
+    WithToken {
+        peek_token: kw::peek,
+        paren_token: Paren,
+        expr: Expr,
+    },
 }
 impl Parse for PeekArg {
     fn parse(input: ParseStream) -> Result<Self> {
         let content;
         let peek_token = input.parse()?;
-        let paren_token = parenthesized!(content in input);
-        let args = content.parse_terminated(Parse::parse)?;
-        Ok(Self {
-            peek_token,
-            paren_token,
-            args,
-        })
+        if input.peek(Paren) {
+            let paren_token = parenthesized!(content in input);
+            let expr = content.parse()?;
+            Ok(Self::WithToken {
+                peek_token,
+                paren_token,
+                expr,
+            })
+        } else {
+            Ok(Self::NoToken { peek_token })
+        }
     }
 }
 impl ToTokens for PeekArg {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.peek_token.to_tokens(tokens);
-        self.paren_token.surround(tokens, |tokens| {
-            self.args.to_tokens(tokens);
-        });
+        match self {
+            Self::NoToken { peek_token } => {
+                peek_token.to_tokens(tokens);
+            }
+            Self::WithToken {
+                peek_token,
+                paren_token,
+                expr,
+            } => {
+                peek_token.to_tokens(tokens);
+                paren_token.surround(tokens, |tokens| {
+                    expr.to_tokens(tokens);
+                });
+            }
+        }
     }
 }

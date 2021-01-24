@@ -167,6 +167,88 @@ fn bracket_close() {
     assert_parse::<TestStruct>(quote!(["abc" = ] 1 + 2 ));
 }
 
+#[test]
+fn peek() {
+    #[derive(Parse, ToTokens)]
+    enum TestEnum {
+        A {
+            #[parse(peek)]
+            eq_token: syn::Token![=],
+        },
+        B {
+            #[parse(peek)]
+            plus_token: syn::Token![+],
+        },
+    }
+
+    assert_parse::<TestEnum>(quote!(=));
+    assert_parse::<TestEnum>(quote!(+));
+}
+
+#[test]
+fn peek2() {
+    #[derive(Parse, ToTokens)]
+    enum TestEnum {
+        A {
+            #[parse(peek)]
+            key: syn::Ident,
+            #[parse(peek)]
+            eq_token: syn::Token![=],
+        },
+        B {
+            #[parse(peek)]
+            key: syn::Ident,
+            #[parse(peek)]
+            plus_token: syn::Token![+],
+        },
+    }
+
+    assert_parse::<TestEnum>(quote!(a=));
+    assert_parse::<TestEnum>(quote!(a+));
+}
+
+#[test]
+fn peek3() {
+    #[derive(Parse, ToTokens)]
+    enum TestEnum {
+        A {
+            #[parse(peek)]
+            key: syn::Ident,
+            #[parse(peek)]
+            eq_token: syn::Token![=],
+            #[parse(peek)]
+            value: syn::Ident,
+        },
+        B {
+            #[parse(peek)]
+            key: syn::Ident,
+            #[parse(peek)]
+            plus_token: syn::Token![+],
+            #[parse(peek)]
+            value: syn::Ident,
+        },
+    }
+
+    assert_parse::<TestEnum>(quote!(a = x));
+    assert_parse::<TestEnum>(quote!(a + y));
+}
+
+// #[test]
+// fn peek_any() {
+//     use syn::ext::IdentExt;
+//     use syn::Ident;
+//     #[derive(Parse, ToTokens)]
+//     enum TestEnum {
+//         A {
+//             #[parse(peek(Ident::peek_any))]
+//             key: syn::Ident,
+//             #[parse(peek)]
+//             eq_token: syn::Token![=],
+//         },
+//     }
+//     assert_parse::<TestEnum>(quote!(struct =));
+// }
+
 fn assert_parse<T: Parse + ToTokens>(ts: TokenStream) {
     let value: T = syn::parse2(ts.clone()).expect("syn::parse2 failed.");
     assert_eq_ts(value, ts);
