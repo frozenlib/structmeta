@@ -134,6 +134,7 @@ fn code_from_fields(
         let mut use_parse = true;
         let mut peek = None;
         let mut is_any = false;
+        let mut is_terminated = false;
         let mut is_root = scopes.len() == 1;
         for attr in &field.attrs {
             if attr.path.is_ident("to_tokens") {
@@ -181,6 +182,7 @@ fn code_from_fields(
                 let attr: ParseAttribute = parse2(attr.tokens.clone())?;
                 peek = peek.or(attr.peek);
                 is_any = is_any || attr.any.is_some();
+                is_terminated = is_terminated || attr.terminated.is_some();
             }
         }
         if let Some(peeks) = &mut peeks {
@@ -209,12 +211,17 @@ fn code_from_fields(
         }
         if use_parse {
             let input = &scopes.last().unwrap().input;
-            let parse_path = if is_any {
-                quote!(#ty::parse_any)
-            } else {
-                quote!(::syn::parse::Parse::parse)
+            let expr = match (is_terminated, is_any) {
+                (false, false) => quote!(::syn::parse::Parse::parse(#input)),
+                (false, true) => quote!(<#ty>::parse_any(#input)),
+                (true, false) => {
+                    quote!(<#ty>::parse_terminated(#input))
+                }
+                (true, true) => {
+                    quote!(<#ty>::parse_terminated_with(#input, ::syn::ext::IdentExt::parse_any))
+                }
             };
-            let code = quote_spanned!(field.span()=>let #var_ident = #parse_path(#input)?;);
+            let code = quote_spanned!(field.span()=>let #var_ident = #expr?;);
             ts.extend(code);
         }
         if let Some(field_ident) = &field.ident {
@@ -253,6 +260,7 @@ fn to_display(index: usize, ident: &Option<Ident>) -> String {
 struct ParseAttribute {
     any: Option<kw::any>,
     peek: Option<kw::peek>,
+    terminated: Option<kw::terminated>,
     dump: Option<kw::dump>,
 }
 impl Parse for ParseAttribute {
@@ -261,6 +269,7 @@ impl Parse for ParseAttribute {
         parenthesized!(content in input);
         let mut any = None;
         let mut peek = None;
+        let mut terminated = None;
         let mut dump = None;
         let args: Punctuated<ParseAttributeArg, Token![,]> =
             content.parse_terminated(ParseAttributeArg::parse)?;
@@ -268,22 +277,32 @@ impl Parse for ParseAttribute {
             match arg {
                 ParseAttributeArg::Any(kw_any) => any = any.or(Some(kw_any)),
                 ParseAttributeArg::Peek(kw_peek) => peek = peek.or(Some(kw_peek)),
+                ParseAttributeArg::Terminated(kw_terminated) => {
+                    terminated = terminated.or(Some(kw_terminated))
+                }
                 ParseAttributeArg::Dump(kw_dump) => dump = dump.or(Some(kw_dump)),
             }
         }
-        Ok(Self { any, peek, dump })
+        Ok(Self {
+            any,
+            peek,
+            terminated,
+            dump,
+        })
     }
 }
 mod kw {
     use syn::custom_keyword;
     custom_keyword!(any);
     custom_keyword!(peek);
+    custom_keyword!(terminated);
     custom_keyword!(dump);
 }
 
 enum ParseAttributeArg {
     Any(kw::any),
     Peek(kw::peek),
+    Terminated(kw::terminated),
     Dump(kw::dump),
 }
 impl Parse for ParseAttributeArg {
@@ -292,6 +311,8 @@ impl Parse for ParseAttributeArg {
             Ok(Self::Any(input.parse()?))
         } else if input.peek(kw::peek) {
             Ok(Self::Peek(input.parse()?))
+        } else if input.peek(kw::terminated) {
+            Ok(Self::Terminated(input.parse()?))
         } else if input.peek(kw::dump) {
             Ok(Self::Dump(input.parse()?))
         } else {

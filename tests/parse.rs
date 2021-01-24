@@ -1,9 +1,9 @@
 mod test_utils;
 
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use structmeta::{Parse, ToTokens};
-use syn::parse::Parse;
+use syn::{parse::Parse, punctuated::Punctuated, LitStr, Token};
 use test_utils::*;
 
 #[test]
@@ -273,6 +273,30 @@ fn peek_any() {
         },
     }
     assert_parse::<TestEnum>(quote!(struct =));
+}
+
+#[test]
+fn parse_terminated() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[parse(terminated)]
+        key: Punctuated<LitStr, Token![,]>,
+    }
+    assert_parse::<TestStruct>(quote!("a"));
+    assert_parse::<TestStruct>(quote!("a",));
+    assert_parse::<TestStruct>(quote!("a", "b"));
+}
+
+#[test]
+fn parse_terminated_any() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[parse(terminated, any)]
+        key: Punctuated<Ident, Token![,]>,
+    }
+    assert_parse::<TestStruct>(quote!(a));
+    assert_parse::<TestStruct>(quote!(a,));
+    assert_parse::<TestStruct>(quote!(a, b, struct));
 }
 
 fn assert_parse<T: Parse + ToTokens>(ts: TokenStream) {
