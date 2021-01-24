@@ -13,4 +13,3 @@ proc-macro = true
 proc-macro2 = "1.0.24"
 syn = "1.0.58"
 quote = "1.0.8"
-heck = "0.3.2"
