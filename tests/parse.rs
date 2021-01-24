@@ -233,21 +233,30 @@ fn peek3() {
     assert_parse::<TestEnum>(quote!(a + y));
 }
 
-// #[test]
-// fn peek_any() {
-//     use syn::ext::IdentExt;
-//     use syn::Ident;
-//     #[derive(Parse, ToTokens)]
-//     enum TestEnum {
-//         A {
-//             #[parse(peek(Ident::peek_any))]
-//             key: syn::Ident,
-//             #[parse(peek)]
-//             eq_token: syn::Token![=],
-//         },
-//     }
-//     assert_parse::<TestEnum>(quote!(struct =));
-// }
+#[test]
+fn parse_any() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[parse(any)]
+        key: syn::Ident,
+        eq_token: syn::Token![=],
+    }
+    assert_parse::<TestStruct>(quote!(struct =));
+}
+
+#[test]
+fn peek_any() {
+    #[derive(Parse, ToTokens)]
+    enum TestEnum {
+        A {
+            #[parse(peek, any)]
+            key: syn::Ident,
+            #[parse(peek)]
+            eq_token: syn::Token![=],
+        },
+    }
+    assert_parse::<TestEnum>(quote!(struct =));
+}
 
 fn assert_parse<T: Parse + ToTokens>(ts: TokenStream) {
     let value: T = syn::parse2(ts.clone()).expect("syn::parse2 failed.");
