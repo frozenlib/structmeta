@@ -316,7 +316,7 @@ impl Parse for ParseAttributeArg {
         } else if input.peek(kw::dump) {
             Ok(Self::Dump(input.parse()?))
         } else {
-            Err(input.error("expected `any`, `peek` or `dump`."))
+            Err(input.error("expected `any`, `peek`, `terminated` or `dump`."))
         }
     }
 }
