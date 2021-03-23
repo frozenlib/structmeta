@@ -188,12 +188,60 @@ fn test_struct_value_name_self() {
 }
 
 #[test]
+fn test_struct_value_unnamed() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[unnamed]
+        abc: LitStr,
+    }
+    check(pq!(#[attr("def")]), Attr { abc: pq!("def") });
+}
+
+#[test]
 fn test_struct_vec() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
         abc: Vec<LitStr>,
     }
-    check(pq!(#[attr(abc())]), Attr { abc: vec![] });
+    check_msg(pq!(#[attr(abc())]), Attr { abc: vec![] }, "args 0");
+    check_msg(
+        pq!(#[attr(abc("item1"))]),
+        Attr {
+            abc: vec![pq!("item1")],
+        },
+        "args 1",
+    );
+    check_msg(
+        pq!(#[attr(abc("item1", "item2"))]),
+        Attr {
+            abc: vec![pq!("item1"), pq!("item2")],
+        },
+        "args 2",
+    );
+}
+
+#[test]
+fn test_struct_vec_unnamed() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[unnamed]
+        abc: Vec<LitStr>,
+    }
+    check_msg(pq!(#[attr()]), Attr { abc: vec![] }, "args 0");
+    check_msg(
+        pq!(#[attr("item1")]),
+        Attr {
+            abc: vec![pq!("item1")],
+        },
+        "args 1",
+    );
+    check_msg(
+        pq!(#[attr("item1", "item2")]),
+        Attr {
+            abc: vec![pq!("item1"), pq!("item2")],
+        },
+        "args 2",
+    );
 }
 
 #[test]
