@@ -149,6 +149,23 @@ fn test_struct_value_raw() {
     }
     check(pq!(#[attr(abc = "def")]), Attr { abc: pq!("def") });
 }
+#[test]
+fn test_struct_value_raw_keyword() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        r#if: LitStr,
+    }
+    check(pq!(#[attr(if = "def")]), Attr { r#if: pq!("def") });
+}
+#[test]
+fn test_struct_value_name() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[name("xxx")]
+        abc: LitStr,
+    }
+    check(pq!(#[attr(xxx = "def")]), Attr { abc: pq!("def") });
+}
 
 #[test]
 fn test_struct_vec() {
