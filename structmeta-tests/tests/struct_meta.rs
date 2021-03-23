@@ -142,6 +142,21 @@ fn test_struct_value() {
 }
 
 #[test]
+fn test_struct_option_value() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        abc: Option<LitStr>,
+    }
+    check(pq!(#[attr()]), Attr { abc: None });
+    check(
+        pq!(#[attr(abc = "def")]),
+        Attr {
+            abc: Some(pq!("def")),
+        },
+    );
+}
+
+#[test]
 fn test_struct_value_raw() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
@@ -215,6 +230,29 @@ fn test_struct_vec() {
         pq!(#[attr(abc("item1", "item2"))]),
         Attr {
             abc: vec![pq!("item1"), pq!("item2")],
+        },
+        "args 2",
+    );
+}
+#[test]
+fn test_struct_option_vec() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        abc: Option<Vec<LitStr>>,
+    }
+    check_msg(pq!(#[attr()]), Attr { abc: None }, "args none");
+    check_msg(pq!(#[attr(abc())]), Attr { abc: Some(vec![]) }, "args 0");
+    check_msg(
+        pq!(#[attr(abc("item1"))]),
+        Attr {
+            abc: Some(vec![pq!("item1")]),
+        },
+        "args 1",
+    );
+    check_msg(
+        pq!(#[attr(abc("item1", "item2"))]),
+        Attr {
+            abc: Some(vec![pq!("item1"), pq!("item2")]),
         },
         "args 2",
     );
