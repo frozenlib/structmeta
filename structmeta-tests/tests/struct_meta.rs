@@ -140,6 +140,16 @@ fn test_struct_value() {
     }
     check(pq!(#[attr(abc = "def")]), Attr { abc: pq!("def") });
 }
+
+#[test]
+fn test_struct_value_raw() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        r#abc: LitStr,
+    }
+    check(pq!(#[attr(abc = "def")]), Attr { abc: pq!("def") });
+}
+
 #[test]
 fn test_struct_vec() {
     #[derive(StructMeta, PartialEq, Debug)]

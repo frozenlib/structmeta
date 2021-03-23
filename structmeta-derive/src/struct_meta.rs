@@ -3,6 +3,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::collections::HashMap;
 use syn::{
+    ext::IdentExt,
     parse::{Parse, ParseStream},
     parse_quote,
     punctuated::Punctuated,
@@ -250,7 +251,7 @@ impl<'a> Param<'a> {
         }
         if name.is_none() {
             if let Some(ident) = &field.ident {
-                name = Some((ident.to_string(), ident.span()));
+                name = Some((ident.unraw().to_string(), ident.span()));
             }
         }
         if unnamed {
