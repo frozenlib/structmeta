@@ -60,6 +60,30 @@
     },
     {
       "type": "shell",
+      "label": "cargo test macro",
+      "command": "cargo",
+      "args": [
+        "+nightly",
+        "test",
+        "--target-dir",
+        "./target/macro_detail",
+        "--all-features"
+      ],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true
+      },
+      "options": {
+        "env": {
+          "RUSTFLAGS": "-Z macro-backtrace"
+        }
+      }
+    },
+    {
+      "type": "shell",
       "label": "cargo run exmaple",
       "command": "cargo",
       "args": [

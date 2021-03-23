@@ -3,6 +3,7 @@ extern crate proc_macro;
 #[macro_use]
 mod syn_utils;
 mod parse;
+mod struct_meta;
 mod to_tokens;
 mod to_tokens_attribute;
 
@@ -23,9 +24,8 @@ pub fn derive_parse(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     into_macro_output(parse::derive_parse(input))
 }
 
-#[proc_macro_derive(StructMeta, attributes(skip, name))]
-pub fn derive_struct_meta(_input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    // let input = parse_macro_input!(input as DeriveInput);
-    // into_macro_output(arbitrary::derive_arbitrary(input))
-    todo!()
+#[proc_macro_derive(StructMeta, attributes(struct_meta, name))]
+pub fn derive_struct_meta(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    into_macro_output(struct_meta::derive_struct_meta(input))
 }

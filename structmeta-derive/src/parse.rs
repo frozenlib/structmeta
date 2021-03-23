@@ -1,8 +1,7 @@
-use std::unreachable;
-
 use crate::{syn_utils::*, to_tokens_attribute::*};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
+use std::unreachable;
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},

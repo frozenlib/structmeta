@@ -7,5 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-syn = "1.0.64"
 structmeta-derive = { path = "../structmeta-derive" }
+proc-macro2 = "1.0.24"
+syn = "1.0.64"
+quote = "1.0.9"
