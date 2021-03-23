@@ -168,6 +168,26 @@ fn test_struct_value_name() {
 }
 
 #[test]
+fn test_struct_value_name_keyword() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[name("if")]
+        abc: LitStr,
+    }
+    check(pq!(#[attr(if = "def")]), Attr { abc: pq!("def") });
+}
+
+#[test]
+fn test_struct_value_name_self() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[name("self")]
+        abc: LitStr,
+    }
+    check(pq!(#[attr(self = "def")]), Attr { abc: pq!("def") });
+}
+
+#[test]
 fn test_struct_vec() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
