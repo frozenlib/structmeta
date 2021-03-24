@@ -154,7 +154,7 @@ The parameters must be in the following order.
 | -------- | ---------------------------------------------------------------------------------------- |
 | dump     | Causes a compile error and outputs the automatically generated code as an error message. |
 
-### For field (TODO)
+### For field
 
 | argument     | effect                                             |
 | ------------ | -------------------------------------------------- |

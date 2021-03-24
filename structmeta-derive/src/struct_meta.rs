@@ -18,11 +18,11 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
         for attr in &input.attrs {
             if attr.path.is_ident("struct_meta") {
                 let args = attr.parse_args_with(
-                    Punctuated::<StructMetaAttributeArg, Token![,]>::parse_terminated,
+                    Punctuated::<StructMetaAttributeArgForStruct, Token![,]>::parse_terminated,
                 )?;
                 for arg in args {
                     match arg {
-                        StructMetaAttributeArg::Dump(_) => dump = true,
+                        StructMetaAttributeArgForStruct::Dump(_) => dump = true,
                     }
                 }
             }
@@ -235,18 +235,14 @@ impl<'a> Param<'a> {
         let mut name = None;
         let mut unnamed = false;
         for attr in &field.attrs {
-            if attr.path.is_ident("name") {
-                if name.is_some() {
-                    bail!(
-                        attr.span(),
-                        "`#[name(\"...\")]` can only be specified once."
-                    )
+            if attr.path.is_ident("struct_meta") {
+                let a = attr.parse_args::<StructMetaAttributeArgsForField>()?;
+                if let Some(a_name) = a.name {
+                    name = Some((a_name.value(), a_name.span()));
                 }
-                let args: LitStr = attr.parse_args()?;
-                name = Some((args.value(), args.span()));
-            }
-            if attr.path.is_ident("unnamed") {
-                unnamed = true;
+                if a.unnamed {
+                    unnamed = true;
+                }
             }
         }
         if name.is_none() {
@@ -421,17 +417,70 @@ mod kw {
     use syn::custom_keyword;
 
     custom_keyword!(dump);
+    custom_keyword!(name);
+    custom_keyword!(unnamed);
 }
 
-enum StructMetaAttributeArg {
+enum StructMetaAttributeArgForStruct {
     Dump(kw::dump),
 }
-impl Parse for StructMetaAttributeArg {
+impl Parse for StructMetaAttributeArgForStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(kw::dump) {
             return Ok(Self::Dump(input.parse()?));
         }
         Err(input.error("usage : #[struct_meta(dump)]"))
+    }
+}
+
+struct StructMetaAttributeArgsForField {
+    name: Option<LitStr>,
+    unnamed: bool,
+}
+impl Parse for StructMetaAttributeArgsForField {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let mut this = Self {
+            name: None,
+            unnamed: false,
+        };
+        for p in Punctuated::<_, Token![,]>::parse_terminated(input)?.into_iter() {
+            match p {
+                StructMetaAttributeArgForField::Name { value, .. } => this.name = Some(value),
+                StructMetaAttributeArgForField::Unnamed { .. } => this.unnamed = true,
+            }
+        }
+        Ok(this)
+    }
+}
+
+enum StructMetaAttributeArgForField {
+    Name {
+        _name_token: kw::name,
+        _eq_token: Token![=],
+        value: LitStr,
+    },
+    Unnamed {
+        _unnamed_token: kw::unnamed,
+    },
+}
+impl Parse for StructMetaAttributeArgForField {
+    fn parse(input: ParseStream) -> Result<Self> {
+        if input.peek(kw::name) && input.peek2(Token![=]) {
+            let name_token = input.parse()?;
+            let eq_token = input.parse()?;
+            let value = input.parse()?;
+            Ok(Self::Name {
+                _name_token: name_token,
+                _eq_token: eq_token,
+                value,
+            })
+        } else if input.peek(kw::unnamed) {
+            Ok(Self::Unnamed {
+                _unnamed_token: input.parse()?,
+            })
+        } else {
+            Err(input.error("expected `name = \"...\"` or `unnamed`."))
+        }
     }
 }
 

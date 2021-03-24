@@ -113,21 +113,24 @@ fn test_tuple_optional_and_variadic() {
 #[test]
 fn test_tuple_requied_named() {
     #[derive(StructMeta, PartialEq, Debug)]
-    struct Attr(#[name("abc")] LitStr);
+    struct Attr(#[struct_meta(name = "abc")] LitStr);
     check(pq!(#[attr(abc = "def")]), Attr(pq!("def")));
 }
 
 #[test]
 fn test_tuple_requied_named_2() {
     #[derive(StructMeta, PartialEq, Debug)]
-    struct Attr(#[name("a")] LitStr, #[name("b")] LitInt);
+    struct Attr(
+        #[struct_meta(name = "a")] LitStr,
+        #[struct_meta(name = "b")] LitInt,
+    );
     check_msg(pq!(#[attr(a = "x", b = 12)]), Attr(pq!("x"), pq!(12)), "ab");
 }
 
 #[test]
 fn test_tuple_optional_named() {
     #[derive(StructMeta, PartialEq, Debug)]
-    struct Attr(#[name("abc")] Option<LitStr>);
+    struct Attr(#[struct_meta(name = "abc")] Option<LitStr>);
     check_msg(pq!(#[attr()]), Attr(None), "args 0");
     check_msg(pq!(#[attr(abc = "def")]), Attr(Some(pq!("def"))), "args 1");
 }
@@ -176,7 +179,7 @@ fn test_struct_value_raw_keyword() {
 fn test_struct_value_name() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
-        #[name("xxx")]
+        #[struct_meta(name = "xxx")]
         abc: LitStr,
     }
     check(pq!(#[attr(xxx = "def")]), Attr { abc: pq!("def") });
@@ -186,7 +189,7 @@ fn test_struct_value_name() {
 fn test_struct_value_name_keyword() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
-        #[name("if")]
+        #[struct_meta(name = "if")]
         abc: LitStr,
     }
     check(pq!(#[attr(if = "def")]), Attr { abc: pq!("def") });
@@ -196,7 +199,7 @@ fn test_struct_value_name_keyword() {
 fn test_struct_value_name_self() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
-        #[name("self")]
+        #[struct_meta(name = "self")]
         abc: LitStr,
     }
     check(pq!(#[attr(self = "def")]), Attr { abc: pq!("def") });
@@ -206,7 +209,7 @@ fn test_struct_value_name_self() {
 fn test_struct_value_unnamed() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
-        #[unnamed]
+        #[struct_meta(unnamed)]
         abc: LitStr,
     }
     check(pq!(#[attr("def")]), Attr { abc: pq!("def") });
@@ -262,7 +265,7 @@ fn test_struct_option_vec() {
 fn test_struct_vec_unnamed() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
-        #[unnamed]
+        #[struct_meta(unnamed)]
         abc: Vec<LitStr>,
     }
     check_msg(pq!(#[attr()]), Attr { abc: vec![] }, "args 0");
