@@ -362,7 +362,9 @@ impl<'a> NamedParam<'a> {
             match self.ty {
                 NamedParamType::Flag => quote!(::structmeta::Flag { span: #temp_ident }),
                 NamedParamType::Bool => quote!(#temp_ident.is_some()),
-                _ => {
+                NamedParamType::Value { .. }
+                | NamedParamType::NameValue { .. }
+                | NamedParamType::NameArgs { .. } => {
                     let msg = format!("missing argument `{}`", self.name);
                     quote!(#temp_ident.ok_or_else(|| ::syn::Error::new(::proc_macro2::Span::call_site(), #msg))?)
                 }
