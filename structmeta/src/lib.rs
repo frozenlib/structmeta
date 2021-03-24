@@ -1,3 +1,9 @@
+/*!
+Parse Rust's attribute arguments by defining a struct.
+
+See [`#[derive(StructMeta)]`](macro@StructMeta) documentation for details.
+*/
+
 #[doc(hidden)]
 pub mod helpers;
 
@@ -102,16 +108,15 @@ The following field will be "Named parameter".
 - NameArgs style : `name(args)`
 - NameArgList style : `name(arg, arg, ...)`
 
-| field type (without span)   | field type (with span)     | style                               | can be use with `Option` |
-| --------------------------- | -------------------------- | ----------------------------------- | ------------------------ |
-| `bool`                      | `Flag`                     | `name`                              |                          |
-| `T`                         | `NameValue<T>`             | `name = value`                      | ✔                        |
-|                             | `NameValue<Option<T>>`     | `name = value` or `name`            | ✔                        |
-|                             | `NameArgs<T>`              | `name(args)`                        | ✔                        |
-|                             | `NameArgs<Option<T>>`      | `name(args)` or `name`              | ✔                        |
-| `Vec<T>`                    | `NameArgs<Vec<T>>`         | `name(arg, arg, ...)`               | ✔                        |
-|                             | `NameArgs<Option<Vec<T>>>` | `name(arg, arg, ...)` or `name`     | ✔                        |
-| `HashMap<String, T>` (TODO) | `HashMap<Ident, T>` (TODO) | `name1 = value, name2 = value, ...` |                          |
+| field type (without span)   | field type (with span)       | style                               | can be use with `Option` |
+| --------------------------- | ---------------------------- | ----------------------------------- | ------------------------ |
+| `bool`                      | [`Flag`]                     | `name`                              |                          |
+| `T`                         | [`NameValue<T>`]             | `name = value`                      | ✔                        |
+|                             | [`NameArgs<T>`]              | `name(args)`                        | ✔                        |
+|                             | [`NameArgs<Option<T>>`]      | `name(args)` or `name`              | ✔                        |
+| `Vec<T>`                    | [`NameArgs<Vec<T>>`]         | `name(arg, arg, ...)`               | ✔                        |
+|                             | [`NameArgs<Option<Vec<T>>>`] | `name(arg, arg, ...)` or `name`     | ✔                        |
+| `HashMap<String, T>` (TODO) | `HashMap<Ident, T>` (TODO)   | `name1 = value, name2 = value, ...` |                          |
 
 The type `T` in the table above needs to implement `syn::parse::Parse`.
 
@@ -148,13 +153,13 @@ The parameters must be in the following order.
 
 ## Helper attribute `#[struct_meta(...)]`
 
-### For struct
+### Struct attribute arguments
 
 | argument | effect                                                                                   |
 | -------- | ---------------------------------------------------------------------------------------- |
 | dump     | Causes a compile error and outputs the automatically generated code as an error message. |
 
-### For field
+### Field attribute arguments
 
 | argument     | effect                                             |
 | ------------ | -------------------------------------------------- |

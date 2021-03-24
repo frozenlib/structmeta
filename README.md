@@ -4,7 +4,7 @@
 [![Docs.rs](https://docs.rs/structmeta/badge.svg)](https://docs.rs/structmeta/)
 [![Actions Status](https://github.com/frozenlib/structmeta/workflows/CI/badge.svg)](https://github.com/frozenlib/structmeta/actions)
 
-Parse Rust's attribute by defining a struct.
+Parse Rust's attribute arguments by defining a struct.
 
 ## Example
 

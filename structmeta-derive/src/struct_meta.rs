@@ -492,7 +492,6 @@ enum NamedParamType<'a> {
     },
     NameValue {
         ty: &'a Type,
-        is_option: bool,
     },
     NameArgs {
         ty: ValueParamType<'a>,
@@ -511,12 +510,7 @@ impl<'a> NamedParamType<'a> {
         } else if is_flag(ty) {
             Self::Flag
         } else if let Some(ty) = get_name_value_element(ty) {
-            let (ty, is_option) = if let Some(ty) = get_option_element(ty) {
-                (ty, true)
-            } else {
-                (ty, false)
-            };
-            Self::NameValue { ty, is_option }
+            Self::NameValue { ty }
         } else if let Some(ty) = get_name_args_element(ty) {
             let (ty, is_option) = if let Some(ty) = get_option_element(ty) {
                 (ty, true)
@@ -536,8 +530,7 @@ impl<'a> NamedParamType<'a> {
     fn is_flag(&self) -> bool {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => true,
-            NamedParamType::Value { .. } => false,
-            NamedParamType::NameValue { is_option, .. } => *is_option,
+            NamedParamType::Value { .. } | NamedParamType::NameValue { .. } => false,
             NamedParamType::NameArgs { is_option, .. } => *is_option,
         }
     }
@@ -565,15 +558,8 @@ impl<'a> NamedParamType<'a> {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => quote!(span),
             NamedParamType::Value { ty } => ty.build_parse_expr(kind),
-            NamedParamType::NameValue { ty, is_option } => {
-                let value = if kind == ArgKind::Flag && *is_option {
-                    quote!(None)
-                } else if *is_option {
-                    quote!(Some(input.parse::<#ty>()?))
-                } else {
-                    quote!(input.parse::<#ty>()?)
-                };
-                quote!(::structmeta::NameValue { span, value: #value })
+            NamedParamType::NameValue { ty } => {
+                quote!(::structmeta::NameValue { span, value: input.parse::<#ty>()? })
             }
             NamedParamType::NameArgs { ty, is_option } => {
                 let args = ty.build_parse_expr(kind);
