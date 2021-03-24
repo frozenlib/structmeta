@@ -301,6 +301,15 @@ fn test_struct_flag() {
         },
     );
 }
+#[test]
+fn test_struct_bool() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        is_enable: bool,
+    }
+    check(pq!(#[attr(is_enable)]), Attr { is_enable: true });
+    check(pq!(#[attr()]), Attr { is_enable: false });
+}
 
 #[test]
 fn test_struct_name_value() {

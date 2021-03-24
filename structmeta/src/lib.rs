@@ -46,14 +46,12 @@ pub fn derive_my_msg(input: TokenStream) -> TokenStream {
 }
 ```
 
-```rust
-# const IGNORE_TOKENS: &str = stringify! {
+```ignore
 #[derive(MyMsg)]
 #[my_msg(msg = "abc")]
 struct TestType;
 
 assert_eq!(MSG, "abc");
-# }
 ```
 
 ## Uses with `#[proc_macro_attribute]`
@@ -81,13 +79,11 @@ pub fn my_attr(attr: TokenStream, _item: TokenStream) -> TokenStream {
 }
 ```
 
-```rust
-# const IGNORE_TOKENS: &str = stringify! {
+```ignore
 #[my_attr(msg = "xyz")]
 struct TestType;
 
 assert_eq!(MSG, "xyz");
-# };
 ```
 
 ## Named parameter

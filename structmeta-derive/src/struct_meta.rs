@@ -358,11 +358,15 @@ impl<'a> NamedParam<'a> {
         let temp_ident = &self.info.temp_ident;
         let value = if self.info.is_option {
             quote!(#temp_ident)
-        } else if let NamedParamType::Flag = &self.ty {
-            quote!(::structmeta::Flag { span: #temp_ident })
         } else {
-            let msg = format!("missing argument `{}`", self.name);
-            quote!(#temp_ident.ok_or_else(|| ::syn::Error::new(::proc_macro2::Span::call_site(), #msg))?)
+            match self.ty {
+                NamedParamType::Flag => quote!(::structmeta::Flag { span: #temp_ident }),
+                NamedParamType::Bool => quote!(#temp_ident.is_some()),
+                _ => {
+                    let msg = format!("missing argument `{}`", self.name);
+                    quote!(#temp_ident.ok_or_else(|| ::syn::Error::new(::proc_macro2::Span::call_site(), #msg))?)
+                }
+            }
         };
         build_ctor_arg(&self.info, value, ctor_args)
     }
@@ -430,6 +434,7 @@ impl Parse for StructMetaAttributeArg {
 }
 
 enum NamedParamType<'a> {
+    Bool,
     Flag,
     Value {
         ty: ValueParamType<'a>,
@@ -450,7 +455,9 @@ struct ValueParamType<'a> {
 
 impl<'a> NamedParamType<'a> {
     fn from_type(ty: &'a Type) -> Self {
-        if is_flag(ty) {
+        if is_bool(ty) {
+            Self::Bool
+        } else if is_flag(ty) {
             Self::Flag
         } else if let Some(ty) = get_name_value_element(ty) {
             let (ty, is_option) = if let Some(ty) = get_option_element(ty) {
@@ -477,7 +484,7 @@ impl<'a> NamedParamType<'a> {
     }
     fn is_flag(&self) -> bool {
         match self {
-            NamedParamType::Flag => true,
+            NamedParamType::Bool | NamedParamType::Flag => true,
             NamedParamType::Value { .. } => false,
             NamedParamType::NameValue { is_option, .. } => *is_option,
             NamedParamType::NameArgs { is_option, .. } => *is_option,
@@ -485,7 +492,7 @@ impl<'a> NamedParamType<'a> {
     }
     fn is_name_value(&self) -> bool {
         match self {
-            NamedParamType::Flag => false,
+            NamedParamType::Bool | NamedParamType::Flag => false,
             NamedParamType::Value {
                 ty: ValueParamType { is_vec, .. },
             } => !is_vec,
@@ -495,7 +502,7 @@ impl<'a> NamedParamType<'a> {
     }
     fn is_name_args(&self) -> bool {
         match self {
-            NamedParamType::Flag => false,
+            NamedParamType::Bool | NamedParamType::Flag => false,
             NamedParamType::Value {
                 ty: ValueParamType { is_vec, .. },
             } => *is_vec,
@@ -505,7 +512,7 @@ impl<'a> NamedParamType<'a> {
     }
     fn build_parse_expr(&self, kind: ArgKind) -> TokenStream {
         match self {
-            NamedParamType::Flag => quote!(span),
+            NamedParamType::Bool | NamedParamType::Flag => quote!(span),
             NamedParamType::Value { ty } => ty.build_parse_expr(kind),
             NamedParamType::NameValue { ty, is_option } => {
                 let value = if kind == ArgKind::Flag && *is_option {
@@ -591,6 +598,9 @@ fn get_name_value_element(ty: &Type) -> Option<&Type> {
 fn get_name_args_element(ty: &Type) -> Option<&Type> {
     get_element(ty, NS_STRUCTMETA, "NameArgs")
 }
+fn is_bool(ty: &Type) -> bool {
+    is_type(ty, NS_PRIMITIVE, "bool")
+}
 fn is_flag(ty: &Type) -> bool {
     is_type(ty, NS_STRUCTMETA, "Flag")
 }
@@ -646,6 +656,7 @@ fn is_match_ns(ss: &Punctuated<PathSegment, Token![::]>, ns: &[&str]) -> bool {
 }
 
 const NS_STRUCTMETA: &[&[&str]] = &[&["structmeta"]];
+const NS_PRIMITIVE: &[&[&str]] = &[&["std", "primitive"], &["core", "primitive"]];
 
 #[cfg(test)]
 mod tests {
