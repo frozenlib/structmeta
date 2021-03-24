@@ -10,14 +10,14 @@ mod to_tokens_attribute;
 use syn::{parse_macro_input, DeriveInput};
 use syn_utils::*;
 
-/// Derive [`quote::ToTokens`].
+/// Derive [`quote::ToTokens`] for syntax tree node.
 #[proc_macro_derive(ToTokens, attributes(to_tokens))]
 pub fn derive_to_tokens(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     into_macro_output(to_tokens::derive_to_tokens(input))
 }
 
-/// Derive [`syn::parse::Parse`].
+/// Derive [`syn::parse::Parse`] for syntax tree node.
 #[proc_macro_derive(Parse, attributes(to_tokens, parse))]
 pub fn derive_parse(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

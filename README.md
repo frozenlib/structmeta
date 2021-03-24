@@ -5,14 +5,27 @@
 [![Actions Status](https://github.com/frozenlib/structmeta/workflows/CI/badge.svg)](https://github.com/frozenlib/structmeta/actions)
 
 Parse Rust's attribute by defining a struct.
-This crate was inspired by [`StructOpt`](https://github.com/TeXitoi/structopt).
-
-This crate provides three derive macro `StructMeta`, `Parse` and `ToTokens`.
 
 ## Example
 
 ```rust
-// TODO
+use structmeta::StructMeta;
+use syn::{parse_quote, Attribute, LitInt, LitStr};
+
+#[derive(StructMeta, Debug)]
+struct MyAttr {
+    x: LitInt,
+    y: LitStr,
+}
+let attr: Attribute = parse_quote!(#[my_attr(x = 10, y = "abc")]);
+let attr: MyAttr = attr.parse_args().unwrap();
+println!("x = {}, y = {}", attr.x, attr.y.value());
+```
+
+This code outputs:
+
+```txt
+x = 10, y = abc
 ```
 
 ## License

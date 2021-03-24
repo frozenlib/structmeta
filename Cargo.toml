@@ -2,6 +2,6 @@
 members = [
     "structmeta",
     "structmeta-derive",    
-    "structmeta-tests",
+    "structmeta-tests",    
 ]
 
