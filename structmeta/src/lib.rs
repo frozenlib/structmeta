@@ -104,7 +104,7 @@ The following field will be "Named parameter".
 
 | field type (without span)   | field type (with span)     | style                               | can be use with `Option` |
 | --------------------------- | -------------------------- | ----------------------------------- | ------------------------ |
-| `bool` (TODO)               | `Flag`                     | `name`                              |                          |
+| `bool`                      | `Flag`                     | `name`                              |                          |
 | `T`                         | `NameValue<T>`             | `name = value`                      | ✔                        |
 |                             | `NameValue<Option<T>>`     | `name = value` or `name`            | ✔                        |
 |                             | `NameArgs<T>`              | `name(args)`                        | ✔                        |
