@@ -11,7 +11,7 @@ use syn::{
 
 pub use structmeta_derive::{Parse, StructMeta, ToTokens};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Flag {
     pub span: Option<Span>,
 }
