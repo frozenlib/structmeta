@@ -72,9 +72,9 @@ impl<'a> Params<'a> {
                             "cannot use unnamed parameter after variadic parameter."
                         )
                     }
-                    if p.ty.is_vec {
+                    if p.is_vec {
                         unnamed_variadic = Some(p);
-                    } else if p.info.is_option {
+                    } else if p.is_option {
                         unnamed_optional.push(p);
                     } else {
                         if !unnamed_optional.is_empty() {
@@ -299,20 +299,26 @@ impl<'a> Param<'a> {
             &field.ty
         };
 
-        let info = ParamInfo::new(index, field, is_option, ty);
+        let info = ParamInfo::new(index, field, ty);
         let ty = NamedParamType::from_type(ty);
         let this = if is_map {
             Param::Map(MapParam { info, ty })
         } else if let Some((name, name_span)) = name {
             Param::Named(NamedParam {
                 info,
-                ty,
                 name,
                 name_span,
+                ty,
+                is_option,
             })
         } else {
-            if let NamedParamType::Value { ty } = ty {
-                Param::Unnamed(UnnamedParam { info, ty })
+            if let NamedParamType::Value { ty, is_vec } = ty {
+                Param::Unnamed(UnnamedParam {
+                    info,
+                    ty,
+                    is_vec,
+                    is_option,
+                })
             } else {
                 bail!(
                     info.span(),
@@ -327,17 +333,15 @@ impl<'a> Param<'a> {
 struct ParamInfo<'a> {
     index: usize,
     field: &'a Field,
-    is_option: bool,
     ty: &'a Type,
     temp_ident: Ident,
 }
 impl<'a> ParamInfo<'a> {
-    fn new(index: usize, field: &'a Field, is_option: bool, ty: &'a Type) -> Self {
+    fn new(index: usize, field: &'a Field, ty: &'a Type) -> Self {
         let temp_ident = format_ident!("_value_{}", index);
         Self {
             index,
             field,
-            is_option,
             ty,
             temp_ident,
         }
@@ -372,11 +376,14 @@ struct NamedParam<'a> {
     name_span: Span,
     name: String,
     ty: NamedParamType<'a>,
+    is_option: bool,
 }
 
 struct UnnamedParam<'a> {
     info: ParamInfo<'a>,
-    ty: ValueParamType<'a>,
+    ty: &'a Type,
+    is_option: bool,
+    is_vec: bool,
 }
 impl<'a> NamedParam<'a> {
     fn build_let(&self) -> TokenStream {
@@ -402,7 +409,7 @@ impl<'a> NamedParam<'a> {
     }
     fn build_ctor_arg(&self, ctor_args: &mut [TokenStream]) {
         let temp_ident = &self.info.temp_ident;
-        let value = if self.info.is_option {
+        let value = if self.is_option {
             quote!(#temp_ident)
         } else {
             match self.ty {
@@ -444,7 +451,7 @@ impl<'a> MapParam<'a> {
 impl<'a> UnnamedParam<'a> {
     fn build_arm_parse_value(&self, index: usize) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
-        let expr = self.ty.build_parse_expr(ArgKind::Value);
+        let expr = build_parse_expr(&self.ty);
         quote_spanned! { self.info.field.span()=>
             #index => {
                 #temp_ident = Some(#expr);
@@ -453,7 +460,7 @@ impl<'a> UnnamedParam<'a> {
     }
     fn build_arm_parse_vec_item(&self) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
-        let expr = self.ty.build_parse_expr(ArgKind::Value);
+        let expr = build_parse_expr(&self.ty);
         quote_spanned! { self.info.field.span()=>
             _ => {
                 #temp_ident.push(#expr);
@@ -462,7 +469,7 @@ impl<'a> UnnamedParam<'a> {
     }
     fn build_ctor_arg(&self, var_is_option: bool, ctor_args: &mut [TokenStream]) {
         let temp_ident = &self.info.temp_ident;
-        let value = match (var_is_option, self.info.is_option) {
+        let value = match (var_is_option, self.is_option) {
             (false, false) | (true, true) => {
                 quote!(#temp_ident)
             }
@@ -560,19 +567,17 @@ enum NamedParamType<'a> {
     Bool,
     Flag,
     Value {
-        ty: ValueParamType<'a>,
+        ty: &'a Type,
+        is_vec: bool,
     },
     NameValue {
         ty: &'a Type,
     },
     NameArgs {
-        ty: ValueParamType<'a>,
+        ty: &'a Type,
         is_option: bool,
+        is_vec: bool,
     },
-}
-struct ValueParamType<'a> {
-    ty: &'a Type,
-    is_vec: bool,
 }
 
 impl<'a> NamedParamType<'a> {
@@ -583,20 +588,30 @@ impl<'a> NamedParamType<'a> {
             Self::Flag
         } else if let Some(ty) = get_name_value_element(ty) {
             Self::NameValue { ty }
-        } else if let Some(ty) = get_name_args_element(ty) {
-            let (ty, is_option) = if let Some(ty) = get_option_element(ty) {
-                (ty, true)
-            } else {
-                (ty, false)
-            };
+        } else if let Some(mut ty) = get_name_args_element(ty) {
+            let mut is_option = false;
+            if let Some(e) = get_option_element(ty) {
+                is_option = true;
+                ty = e;
+            }
+            let mut is_vec = false;
+            if let Some(e) = get_vec_element(ty) {
+                is_vec = true;
+                ty = e;
+            }
             Self::NameArgs {
-                ty: ValueParamType::from_type(ty),
+                ty,
                 is_option,
+                is_vec,
             }
         } else {
-            Self::Value {
-                ty: ValueParamType::from_type(ty),
+            let mut ty = ty;
+            let mut is_vec = false;
+            if let Some(e) = get_vec_element(ty) {
+                is_vec = true;
+                ty = e;
             }
+            Self::Value { ty, is_vec }
         }
     }
     fn is_flag(&self) -> bool {
@@ -609,9 +624,7 @@ impl<'a> NamedParamType<'a> {
     fn is_name_value(&self) -> bool {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => false,
-            NamedParamType::Value {
-                ty: ValueParamType { is_vec, .. },
-            } => !is_vec,
+            NamedParamType::Value { is_vec, .. } => !is_vec,
             NamedParamType::NameValue { .. } => true,
             NamedParamType::NameArgs { .. } => false,
         }
@@ -619,9 +632,7 @@ impl<'a> NamedParamType<'a> {
     fn is_name_args(&self) -> bool {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => false,
-            NamedParamType::Value {
-                ty: ValueParamType { is_vec, .. },
-            } => *is_vec,
+            NamedParamType::Value { is_vec, .. } => *is_vec,
             NamedParamType::NameValue { .. } => false,
             NamedParamType::NameArgs { .. } => true,
         }
@@ -629,60 +640,51 @@ impl<'a> NamedParamType<'a> {
     fn build_parse_expr(&self, kind: ArgKind) -> TokenStream {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => quote!(span),
-            NamedParamType::Value { ty } => ty.build_parse_expr(kind),
+            NamedParamType::Value { ty, is_vec } => {
+                if *is_vec {
+                    build_parse_expr_name_args(ty, *is_vec)
+                } else {
+                    build_parse_expr(ty)
+                }
+            }
             NamedParamType::NameValue { ty } => {
                 quote!(::structmeta::NameValue { name_span : span, value: input.parse::<#ty>()? })
             }
-            NamedParamType::NameArgs { ty, is_option } => {
-                let args = ty.build_parse_expr(kind);
+            NamedParamType::NameArgs {
+                ty,
+                is_option,
+                is_vec,
+            } => {
                 let args = if kind == ArgKind::Flag && *is_option {
                     quote!(None)
-                } else if *is_option {
-                    quote!(Some(#args))
                 } else {
-                    args
+                    let args = build_parse_expr_name_args(ty, *is_vec);
+                    if *is_option {
+                        quote!(Some(#args))
+                    } else {
+                        args
+                    }
                 };
                 quote!(structmeta::NameArgs { name_span : span, args: #args })
             }
         }
     }
 }
-impl<'a> ValueParamType<'a> {
-    fn from_type(ty: &'a Type) -> Self {
-        let (is_vec, ty) = if let Some(ty) = get_vec_element(ty) {
-            (true, ty)
-        } else {
-            (false, ty)
-        };
-        Self { is_vec, ty }
-    }
-    fn build_parse_expr(&self, kind: ArgKind) -> TokenStream {
-        let ty = self.ty;
-        if self.is_vec {
-            match kind {
-                ArgKind::Flag => unreachable!(),
-                ArgKind::Value => quote!(input.parse::<#ty>()?),
-                ArgKind::NameValue => quote!(input.parse::<::std::vec::Vec<#ty>>()?),
-                ArgKind::NameArgs => quote! {
-                    {
-                        let content;
-                        ::syn::parenthesized!(content in input);
-                        ::syn::punctuated::Punctuated::<#ty, ::syn::Token![,]>::parse_terminated(&content)?.into_iter().collect()
-                    }
-                },
-            }
-        } else {
-            match kind {
-                ArgKind::Flag => unreachable!(),
-                ArgKind::Value | ArgKind::NameValue => quote!(input.parse::<#ty>()?),
-                ArgKind::NameArgs => quote! {
-                    {
-                        let content;
-                        ::syn::parenthesized!(content in input);
-                        content.parse::<#ty>()?
-                    }
-                },
-            }
+
+fn build_parse_expr(ty: &Type) -> TokenStream {
+    quote!(input.parse::<#ty>()?)
+}
+fn build_parse_expr_name_args(ty: &Type, is_vec: bool) -> TokenStream {
+    let value = if is_vec {
+        quote!(::syn::punctuated::Punctuated::<#ty, ::syn::Token![,]>::parse_terminated(&content)?.into_iter().collect())
+    } else {
+        quote!(content.parse::<#ty>()?)
+    };
+    quote! {
+        {
+            let content;
+            ::syn::parenthesized!(content in input);
+            #value
         }
     }
 }
