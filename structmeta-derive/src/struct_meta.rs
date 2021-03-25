@@ -262,12 +262,14 @@ enum Param<'a> {
 impl<'a> Param<'a> {
     fn from_field(index: usize, field: &'a Field) -> Result<Self> {
         let mut name = None;
+        let mut name_specified = false;
         let mut unnamed = false;
         for attr in &field.attrs {
             if attr.path.is_ident("struct_meta") {
                 let a = attr.parse_args::<StructMetaAttributeArgsForField>()?;
                 if let Some(a_name) = a.name {
                     name = Some((a_name.value(), a_name.span()));
+                    name_specified = true;
                 }
                 if a.unnamed {
                     unnamed = true;
@@ -286,7 +288,8 @@ impl<'a> Param<'a> {
         let mut is_map = false;
         let mut is_option = false;
 
-        let ty = if let Some(ty) = get_hash_map_string_element(&field.ty) {
+        let ty = if let (false, Some(ty)) = (name_specified, get_hash_map_string_element(&field.ty))
+        {
             is_map = true;
             ty
         } else if let Some(ty) = get_option_element(&field.ty) {
