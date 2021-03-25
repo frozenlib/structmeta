@@ -139,7 +139,10 @@
       "presentation": {
         "panel": "dedicated",
         "clear": true
-      }
+      },
+      "dependsOn": [
+        "sync doc"
+      ],
     },
     {
       "type": "shell",
@@ -153,6 +156,21 @@
         "--",
         "-W",
         "clippy::all"
+      ],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "sync doc",
+      "command": "sync-doc",
+      "args": [
+        "${workspaceFolder}"
       ],
       "problemMatcher": [
         "$rustc"

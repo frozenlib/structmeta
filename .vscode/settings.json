@@ -1,4 +1,7 @@
 {
     "rust-analyzer.procMacro.enable": true,
     "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+    "markdownlint.config": {
+        "MD041": false,
+    }
 }

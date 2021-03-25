@@ -1,5 +1,3 @@
-# derive macro `StructMeta`
-
 Derive [`syn::parse::Parse`] for parsing attribute arguments.
 
 ## Uses with `#[proc_macro_derive]`
