@@ -49,10 +49,11 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
 }
 struct Params<'a> {
     fields: &'a Fields,
-    named: HashMap<String, NamedParam<'a>>,
     unnamed_required: Vec<UnnamedParam<'a>>,
     unnamed_optional: Vec<UnnamedParam<'a>>,
     unnamed_variadic: Option<UnnamedParam<'a>>,
+    named: HashMap<String, NamedParam<'a>>,
+    map: Option<MapParam<'a>>,
 }
 impl<'a> Params<'a> {
     fn from_fields(fields: &'a Fields) -> Result<Self> {
@@ -60,16 +61,11 @@ impl<'a> Params<'a> {
         let mut unnamed_optional = Vec::new();
         let mut unnamed_variadic = None;
         let mut named = HashMap::new();
+        let mut map = None;
         for (index, field) in fields.iter().enumerate() {
+            let span = field.span();
             match Param::from_field(index, field)? {
-                Param::Named(p) => {
-                    if named.contains_key(&p.name) {
-                        bail!(p.name_span, "`{}` is already exists.", p.name);
-                    }
-                    named.insert(p.name.clone(), p);
-                }
                 Param::Unnamed(p) => {
-                    let span = field.span();
                     if unnamed_variadic.is_some() {
                         bail!(
                             span,
@@ -90,14 +86,27 @@ impl<'a> Params<'a> {
                         unnamed_required.push(p);
                     }
                 }
+                Param::Named(p) => {
+                    if named.contains_key(&p.name) {
+                        bail!(p.name_span, "`{}` is already exists.", p.name);
+                    }
+                    named.insert(p.name.clone(), p);
+                }
+                Param::Map(p) => {
+                    if map.is_some() {
+                        bail!(span, "cannot use map parameter twice.")
+                    }
+                    map = Some(p);
+                }
             }
         }
         Ok(Self {
             fields,
-            named,
             unnamed_required,
             unnamed_optional,
             unnamed_variadic,
+            named,
+            map,
         })
     }
     fn build(&self) -> TokenStream {
@@ -134,28 +143,37 @@ impl<'a> Params<'a> {
             ts.extend(p.build_let());
             p.build_ctor_arg(&mut ctor_args);
         }
-        let ps_flag = self.named_filter(|p| p.ty.is_flag());
-        let ps_name_value = self.named_filter(|p| p.ty.is_name_value());
-        let ps_name_args = self.named_filter(|p| p.ty.is_name_args());
+        let (flag_ps, flag_map) = self.named_ps(|p| p.is_flag());
+        let (name_value_ps, name_value_map) = self.named_ps(|p| p.is_name_value());
+        let (name_args_ps, name_args_map) = self.named_ps(|p| p.is_name_args());
 
         let mut arms_named = Vec::new();
-        let mut index = 0;
-        for p in &ps_flag {
+        for (index, p) in flag_ps.iter().enumerate() {
             arms_named.push(p.build_arm_parse(index, ArgKind::Flag));
-            index += 1;
         }
-        for p in &ps_name_value {
+        for (index, p) in name_value_ps.iter().enumerate() {
             arms_named.push(p.build_arm_parse(index, ArgKind::NameValue));
-            index += 1;
         }
-        for p in &ps_name_args {
+        for (index, p) in name_args_ps.iter().enumerate() {
             arms_named.push(p.build_arm_parse(index, ArgKind::NameArgs));
-            index += 1;
+        }
+        if let Some(p) = &self.map {
+            ts.extend(p.build_let());
+            p.build_ctor_arg(&mut ctor_args);
+            if flag_map {
+                arms_named.push(p.build_arm_parse(ArgKind::Flag));
+            }
+            if name_value_map {
+                arms_named.push(p.build_arm_parse(ArgKind::NameValue));
+            }
+            if name_args_map {
+                arms_named.push(p.build_arm_parse(ArgKind::NameArgs));
+            }
         }
 
-        let names_flag = NamedParam::to_names(&ps_flag);
-        let names_name_value = NamedParam::to_names(&ps_name_value);
-        let names_name_args = NamedParam::to_names(&ps_name_args);
+        let flag_names = NamedParam::to_names(&flag_ps);
+        let name_value_names = NamedParam::to_names(&name_value_ps);
+        let name_args_names = NamedParam::to_names(&name_args_ps);
         let no_unnamed = self.unnamed_optional.is_empty() && self.unnamed_variadic.is_none();
         let ctor_args = match &self.fields {
             Fields::Named(_) => {
@@ -200,9 +218,12 @@ impl<'a> Params<'a> {
                 }
                 is_next = true;
                 if let Some((index, span)) = ::structmeta::helpers::try_parse_name(input,
-                    &[#(#names_flag,)*],
-                    &[#(#names_name_value,)*],
-                    &[#(#names_name_args,)*],
+                    &[#(#flag_names,)*],
+                    #flag_map,
+                    &[#(#name_value_names,)*],
+                    #name_value_map,
+                    &[#(#name_args_names,)*],
+                    #name_args_map,
                     #no_unnamed)?
                 {
                     named_used = true;
@@ -220,14 +241,22 @@ impl<'a> Params<'a> {
 
         ts
     }
-    fn named_filter(&self, f: impl Fn(&&NamedParam<'a>) -> bool) -> Vec<&NamedParam<'a>> {
-        self.named.values().filter(f).collect()
+    fn named_ps(&self, f: impl Fn(&NamedParamType<'a>) -> bool) -> (Vec<&NamedParam<'a>>, bool) {
+        (
+            self.named.values().filter(|p| f(&p.ty)).collect(),
+            if let Some(p) = &self.map {
+                f(&p.ty)
+            } else {
+                false
+            },
+        )
     }
 }
 
 enum Param<'a> {
-    Named(NamedParam<'a>),
     Unnamed(UnnamedParam<'a>),
+    Named(NamedParam<'a>),
+    Map(MapParam<'a>),
 }
 
 impl<'a> Param<'a> {
@@ -253,14 +282,25 @@ impl<'a> Param<'a> {
         if unnamed {
             name = None;
         }
-        let (is_option, ty) = if let Some(ty) = get_option_element(&field.ty) {
-            (true, ty)
+
+        let mut is_map = false;
+        let mut is_option = false;
+
+        let ty = if let Some(ty) = get_hash_map_string_element(&field.ty) {
+            is_map = true;
+            ty
+        } else if let Some(ty) = get_option_element(&field.ty) {
+            is_option = true;
+            ty
         } else {
-            (false, &field.ty)
+            &field.ty
         };
+
         let info = ParamInfo::new(index, field, is_option, ty);
         let ty = NamedParamType::from_type(ty);
-        Ok(if let Some((name, name_span)) = name {
+        let this = if is_map {
+            Param::Map(MapParam { info, ty })
+        } else if let Some((name, name_span)) = name {
             Param::Named(NamedParam {
                 info,
                 ty,
@@ -276,7 +316,8 @@ impl<'a> Param<'a> {
                     "this field type cannot be used as unnamed parameter."
                 )
             }
-        })
+        };
+        Ok(this)
     }
 }
 
@@ -318,7 +359,7 @@ impl<'a> ParamInfo<'a> {
     }
 }
 
-struct FlattenParam<'a> {
+struct MapParam<'a> {
     info: ParamInfo<'a>,
     ty: NamedParamType<'a>,
 }
@@ -343,8 +384,9 @@ impl<'a> NamedParam<'a> {
         let temp_ident = &self.info.temp_ident;
         let msg = format!("parameter `{}` speficied more than once", self.name);
         let expr = self.ty.build_parse_expr(kind);
+        let var = kind.to_helper_name_index_variant();
         quote_spanned! { self.info.field.span()=>
-            #index => {
+            ::structmeta::helpers::NameIndex::#var(Ok(#index)) => {
                 if #temp_ident.is_some() {
                     return Err(::syn::Error::new(span, #msg));
                 }
@@ -372,6 +414,28 @@ impl<'a> NamedParam<'a> {
             }
         };
         build_ctor_arg(&self.info, value, ctor_args)
+    }
+}
+impl<'a> MapParam<'a> {
+    fn build_let(&self) -> TokenStream {
+        let temp_ident = &self.info.temp_ident;
+        quote!(let mut #temp_ident = ::std::collections::HashMap::new();)
+    }
+    fn build_arm_parse(&self, kind: ArgKind) -> TokenStream {
+        let temp_ident = &self.info.temp_ident;
+        let expr = self.ty.build_parse_expr(kind);
+        let var = kind.to_helper_name_index_variant();
+        quote_spanned! { self.info.field.span()=>
+            ::structmeta::helpers::NameIndex::#var(Err(name)) => {
+                if #temp_ident.insert(name.to_string(), #expr).is_some() {
+                    return Err(::syn::Error::new(span, format!("parameter `{}` speficied more than once", name)));
+                }
+            }
+        }
+    }
+    fn build_ctor_arg(&self, ctor_args: &mut [TokenStream]) {
+        let temp_ident = &self.info.temp_ident;
+        build_ctor_arg(&self.info, quote!(#temp_ident), ctor_args)
     }
 }
 impl<'a> UnnamedParam<'a> {
@@ -564,7 +628,7 @@ impl<'a> NamedParamType<'a> {
             NamedParamType::Bool | NamedParamType::Flag => quote!(span),
             NamedParamType::Value { ty } => ty.build_parse_expr(kind),
             NamedParamType::NameValue { ty } => {
-                quote!(::structmeta::NameValue { span, value: input.parse::<#ty>()? })
+                quote!(::structmeta::NameValue { name_span : span, value: input.parse::<#ty>()? })
             }
             NamedParamType::NameArgs { ty, is_option } => {
                 let args = ty.build_parse_expr(kind);
@@ -575,7 +639,7 @@ impl<'a> NamedParamType<'a> {
                 } else {
                     args
                 };
-                quote!(structmeta::NameArgs { span, args: #args })
+                quote!(structmeta::NameArgs { name_span : span, args: #args })
             }
         }
     }
@@ -627,6 +691,16 @@ enum ArgKind {
     NameValue,
     NameArgs,
 }
+impl ArgKind {
+    fn to_helper_name_index_variant(&self) -> TokenStream {
+        match self {
+            Self::Flag => quote!(Flag),
+            Self::Value => unreachable!(),
+            Self::NameValue => quote!(NameValue),
+            Self::NameArgs => quote!(NameArgs),
+        }
+    }
+}
 
 fn get_option_element(ty: &Type) -> Option<&Type> {
     get_element(ty, &[&["std", "option"], &["core", "option"]], "Option")
@@ -640,11 +714,30 @@ fn get_name_value_element(ty: &Type) -> Option<&Type> {
 fn get_name_args_element(ty: &Type) -> Option<&Type> {
     get_element(ty, NS_STRUCTMETA, "NameArgs")
 }
+fn get_hash_map_element(ty: &Type) -> Option<(&Type, &Type)> {
+    get_element2(
+        ty,
+        &[&["std", "collections"], &["std", "collections", "hash_map"]],
+        "HashMap",
+    )
+}
+fn get_hash_map_string_element(ty: &Type) -> Option<&Type> {
+    let (ty_key, ty_value) = get_hash_map_element(ty)?;
+    if is_string(ty_key) {
+        Some(ty_value)
+    } else {
+        None
+    }
+}
+
 fn is_bool(ty: &Type) -> bool {
     is_type(ty, NS_PRIMITIVE, "bool")
 }
 fn is_flag(ty: &Type) -> bool {
     is_type(ty, NS_STRUCTMETA, "Flag")
+}
+fn is_string(ty: &Type) -> bool {
+    is_type(ty, &[&["std", "string"], &["alloc", "string"]], "String")
 }
 
 fn get_element<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a Type> {
@@ -657,6 +750,19 @@ fn get_element<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a Type>
     }
     None
 }
+fn get_element2<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<(&'a Type, &'a Type)> {
+    if let PathArguments::AngleBracketed(args) = get_argumnets_of(ty, ns, name)? {
+        if args.args.len() == 2 {
+            if let (GenericArgument::Type(ty0), GenericArgument::Type(ty1)) =
+                (&args.args[0], &args.args[1])
+            {
+                return Some((ty0, ty1));
+            }
+        }
+    }
+    None
+}
+
 fn is_type(ty: &Type, ns: &[&[&str]], name: &str) -> bool {
     if let Some(a) = get_argumnets_of(ty, ns, name) {
         a.is_empty()

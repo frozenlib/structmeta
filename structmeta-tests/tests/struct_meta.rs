@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug, iter::FromIterator};
 use structmeta::*;
 use syn::{parse::Parse, parse_quote, Attribute, LitInt, LitStr};
 
@@ -344,6 +344,35 @@ fn test_struct_name_args() {
                 args: pq!("xyz"),
             },
         },
+    );
+}
+
+#[test]
+fn test_struct_map() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        m: HashMap<String, LitStr>,
+    }
+    check_msg(
+        pq!(#[attr()]),
+        Attr {
+            m: HashMap::from_iter(vec![]),
+        },
+        "args 0",
+    );
+    check_msg(
+        pq!(#[attr(abc = "xyz")]),
+        Attr {
+            m: HashMap::from_iter(vec![("abc".into(), pq!("xyz"))]),
+        },
+        "args 1",
+    );
+    check_msg(
+        pq!(#[attr(abc = "xyz", def = "123")]),
+        Attr {
+            m: HashMap::from_iter(vec![("abc".into(), pq!("xyz")), ("def".into(), pq!("123"))]),
+        },
+        "args 2",
     );
 }
 
