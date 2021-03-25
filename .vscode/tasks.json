@@ -84,6 +84,30 @@
     },
     {
       "type": "shell",
+      "label": "update compile error",
+      "command": "cargo",
+      "args": [
+        "test",
+        "--test",
+        "compile_fail",
+        "--",
+        "--ignored"
+      ],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true
+      },
+      "options": {
+        "env": {
+          "TRYBUILD": "overwrite"
+        }
+      }
+    },
+    {
+      "type": "shell",
       "label": "cargo run exmaple",
       "command": "cargo",
       "args": [
