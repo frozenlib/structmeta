@@ -688,7 +688,6 @@ fn build_parse_expr_name_args(ty: &Type, is_vec: bool) -> TokenStream {
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 enum ArgKind {
     Flag,
-    Value,
     NameValue,
     NameArgs,
 }
@@ -696,7 +695,6 @@ impl ArgKind {
     fn to_helper_name_index_variant(&self) -> TokenStream {
         match self {
             Self::Flag => quote!(Flag),
-            Self::Value => unreachable!(),
             Self::NameValue => quote!(NameValue),
             Self::NameArgs => quote!(NameArgs),
         }
