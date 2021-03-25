@@ -1,0 +1,8 @@
+error[E0308]: mismatched types
+ --> $DIR/mismatch_surround.rs:6:5
+  |
+6 |     braket_token: syn::token::Bracket,
+  |     ^^^^^^^^^^^^ expected struct `syn::token::Paren`, found struct `syn::token::Bracket`
+  |
+  = note: expected reference `&syn::token::Paren`
+             found reference `&syn::token::Bracket`

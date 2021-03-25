@@ -87,8 +87,48 @@ struct Scope<'a> {
 struct Surround<'a> {
     ident: Ident,
     field: &'a Field,
-    close: char,
+    kind: SurroundKind,
 }
+
+#[derive(PartialEq, Debug, Clone, Copy)]
+enum SurroundKind {
+    Bracket,
+    Brace,
+    Paren,
+}
+impl SurroundKind {
+    fn close(&self) -> char {
+        match self {
+            SurroundKind::Bracket => ']',
+            SurroundKind::Brace => '}',
+            SurroundKind::Paren => ')',
+        }
+    }
+    fn from_open(value: char) -> Option<Self> {
+        match value {
+            '[' => Some(Self::Bracket),
+            '{' => Some(Self::Brace),
+            '(' => Some(Self::Paren),
+            _ => None,
+        }
+    }
+    fn from_close(value: char) -> Option<Self> {
+        match value {
+            ']' => Some(Self::Bracket),
+            '}' => Some(Self::Brace),
+            ')' => Some(Self::Paren),
+            _ => None,
+        }
+    }
+    fn type_ident(&self) -> Ident {
+        match self {
+            SurroundKind::Bracket => parse_quote!(Bracket),
+            SurroundKind::Brace => parse_quote!(Brace),
+            SurroundKind::Paren => parse_quote!(Paren),
+        }
+    }
+}
+
 impl<'a> Scope<'a> {
     fn new(surround: Option<Surround<'a>>) -> Self {
         Self {
@@ -98,17 +138,18 @@ impl<'a> Scope<'a> {
     }
 }
 impl<'a> Scope<'a> {
-    fn into_code(self, close: Option<char>) -> Option<TokenStream> {
+    fn into_code(self, surround_kind: Option<SurroundKind>) -> Option<TokenStream> {
         if let Some(s) = self.surround {
             let mut mismatch = false;
-            if let Some(close) = close {
-                mismatch = close != s.close;
+            if let Some(surround_kind) = surround_kind {
+                mismatch = s.kind != surround_kind;
             }
             if !mismatch {
+                let ty = s.kind.type_ident();
                 let ident = &s.ident;
                 let ts = self.ts;
                 return Some(quote_spanned!(s.field.span()=>
-                #ident.surround(tokens, |tokens| { #ts });
+                ::syn::token::#ty::surround(#ident, tokens, |tokens| { #ts });
                 ));
             }
         }
@@ -125,31 +166,31 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
                 let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
                 for token in &attr.token {
                     for c in token.value().chars() {
-                        match c {
-                            '(' | '[' | '{' => {
-                                let close = to_close(c);
-                                scopes.push(Scope::new(Some(Surround {
-                                    ident: ident.clone(),
-                                    field,
-                                    close,
-                                })));
-                                field_to_tokens = false;
-                            }
-                            ')' | ']' | '}' => {
-                                let scope = scopes.pop().unwrap();
-                                if let Some(code) = scope.into_code(Some(c)) {
-                                    scopes.last_mut().unwrap().ts.extend(code);
-                                } else {
-                                    bail!(token.span(), "mismatched closing delimiter `{}`.", c);
-                                }
-                            }
-                            _ => {
+                        if let Some(kind) = SurroundKind::from_open(c) {
+                            scopes.push(Scope::new(Some(Surround {
+                                ident: ident.clone(),
+                                field,
+                                kind,
+                            })));
+                            field_to_tokens = false;
+                        } else if let Some(kind) = SurroundKind::from_close(c) {
+                            let scope = scopes.pop().unwrap();
+                            if let Some(code) = scope.into_code(Some(kind)) {
+                                scopes.last_mut().unwrap().ts.extend(code);
+                            } else {
                                 bail!(
                                     token.span(),
-                                    "expected '(', ')', '[', ']', '{{' or '}}', found `{}`.",
+                                    "mismatched closing delimiter expected `{}`, found `{}`.",
+                                    kind.close(),
                                     c
                                 );
                             }
+                        } else {
+                            bail!(
+                                token.span(),
+                                "expected '(', ')', '[', ']', '{{' or '}}', found `{}`.",
+                                c
+                            );
                         }
                     }
                 }
