@@ -179,7 +179,7 @@ fn paren_close() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("(")]
-        brace_token: syn::token::Paren,
+        paren_token: syn::token::Paren,
         key: syn::LitStr,
         eq_token: syn::Token![=],
         #[to_tokens(")")]
@@ -187,7 +187,7 @@ fn paren_close() {
     }
 
     let s = TestStruct {
-        brace_token: Default::default(),
+        paren_token: Default::default(),
         key: parse_quote!("abc"),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
@@ -201,11 +201,11 @@ fn paren_nested() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("(")]
-        brace_token1: syn::token::Paren,
+        paren_token1: syn::token::Paren,
         key: syn::LitStr,
 
         #[to_tokens("(")]
-        brace_token2: syn::token::Paren,
+        paren_token2: syn::token::Paren,
 
         eq_token: syn::Token![=],
         #[to_tokens(")")]
@@ -213,9 +213,9 @@ fn paren_nested() {
     }
 
     let s = TestStruct {
-        brace_token1: Default::default(),
+        paren_token1: Default::default(),
         key: parse_quote!("abc"),
-        brace_token2: Default::default(),
+        paren_token2: Default::default(),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
     };
@@ -228,11 +228,11 @@ fn paren_close_many() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("(")]
-        brace_token1: syn::token::Paren,
+        paren_token1: syn::token::Paren,
         key: syn::LitStr,
 
         #[to_tokens("(")]
-        brace_token2: syn::token::Paren,
+        paren_token2: syn::token::Paren,
 
         eq_token: syn::Token![=],
         #[to_tokens("))")]
@@ -240,9 +240,9 @@ fn paren_close_many() {
     }
 
     let s = TestStruct {
-        brace_token1: Default::default(),
+        paren_token1: Default::default(),
         key: parse_quote!("abc"),
-        brace_token2: Default::default(),
+        paren_token2: Default::default(),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
     };
@@ -255,20 +255,20 @@ fn paren_close_open() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("(")]
-        brace_token1: syn::token::Paren,
+        paren_token1: syn::token::Paren,
         key: syn::LitStr,
 
         #[to_tokens(")(")]
-        brace_token2: syn::token::Paren,
+        paren_token2: syn::token::Paren,
 
         eq_token: syn::Token![=],
         value: syn::Expr,
     }
 
     let s = TestStruct {
-        brace_token1: Default::default(),
+        paren_token1: Default::default(),
         key: parse_quote!("abc"),
-        brace_token2: Default::default(),
+        paren_token2: Default::default(),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
     };
@@ -281,14 +281,14 @@ fn bracket_all() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("[")]
-        paren_token: syn::token::Bracket,
+        braket_token: syn::token::Bracket,
         key: syn::LitStr,
         eq_token: syn::Token![=],
         value: syn::Expr,
     }
 
     let s = TestStruct {
-        paren_token: Default::default(),
+        braket_token: Default::default(),
         key: parse_quote!("abc"),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
@@ -302,7 +302,7 @@ fn bracket_close() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("[")]
-        brace_token: syn::token::Bracket,
+        braket_token: syn::token::Bracket,
         key: syn::LitStr,
         eq_token: syn::Token![=],
         #[to_tokens("]")]
@@ -310,7 +310,7 @@ fn bracket_close() {
     }
 
     let s = TestStruct {
-        brace_token: Default::default(),
+        braket_token: Default::default(),
         key: parse_quote!("abc"),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
