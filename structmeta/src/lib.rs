@@ -12,7 +12,7 @@ use std::{fmt::Display, str::FromStr};
 use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
-    Error, Result,
+    Error, LitFloat, LitInt, LitStr, Result,
 };
 
 pub use structmeta_derive::{Parse, ToTokens};
@@ -108,21 +108,22 @@ The following field will be "Named parameter".
 - NameArgs style : `name(args)`
 - NameArgList style : `name(arg, arg, ...)`
 
-| field type (without span)   | field type (with span)       | style                               | can be use with `Option` |
-| --------------------------- | ---------------------------- | ----------------------------------- | ------------------------ |
-| `bool`                      | [`Flag`]                     | `name`                              |                          |
-| `T`                         | [`NameValue<T>`]             | `name = value`                      | ✔                        |
-|                             | [`NameArgs<T>`]              | `name(args)`                        | ✔                        |
-|                             | [`NameArgs<Option<T>>`]      | `name(args)` or `name`              | ✔                        |
-| `Vec<T>`                    | [`NameArgs<Vec<T>>`]         | `name(arg, arg, ...)`               | ✔                        |
-|                             | [`NameArgs<Option<Vec<T>>>`] | `name(arg, arg, ...)` or `name`     | ✔                        |
-| `HashMap<String, T>` (TODO) | `HashMap<Ident, T>` (TODO)   | `name1 = value, name2 = value, ...` |                          |
+| field type (without span) | field type (with span)       | style                           | can be use with `Option` |
+| ------------------------- | ---------------------------- | ------------------------------- | ------------------------ |
+| `bool`                    | [`Flag`]                     | `name`                          |                          |
+| `T`                       | [`NameValue<T>`]             | `name = value`                  | ✔                        |
+|                           | [`NameArgs<T>`]              | `name(args)`                    | ✔                        |
+|                           | [`NameArgs<Option<T>>`]      | `name(args)` or `name`          | ✔                        |
+| `Vec<T>`                  | [`NameArgs<Vec<T>>`]         | `name(arg, arg, ...)`           | ✔                        |
+|                           | [`NameArgs<Option<Vec<T>>>`] | `name(arg, arg, ...)` or `name` | ✔                        |
 
 The type `T` in the table above needs to implement `syn::parse::Parse`.
 
-The type in `field type (with span)` column of the table above has `span` member and holds `Span` of parameter name.
+The type in `field type (with span)` column of the table above holds `Span` of parameter name.
 
 Some types can be wrap with `Option` to make them optional parameters.
+
+Some types can be wrap with `HashMap<String, _>` to make them arbitrary name parameters.
 
 ## Unnamed parameter
 
@@ -193,9 +194,9 @@ impl From<bool> for Flag {
 }
 
 /// `name = value` style attribute argument.
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct NameValue<T> {
-    pub span: Span,
+    pub name_span: Span,
     pub value: T,
 }
 impl<T: PartialEq> PartialEq for NameValue<T> {
@@ -205,9 +206,9 @@ impl<T: PartialEq> PartialEq for NameValue<T> {
 }
 
 /// `name(value)` style attribute argument.
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct NameArgs<T> {
-    pub span: Span,
+    pub name_span: Span,
     pub args: T,
 }
 impl<T: PartialEq> PartialEq for NameArgs<T> {
@@ -231,5 +232,69 @@ where
             Ok(value) => Ok(Keyword { span, value }),
             Err(e) => Err(Error::new(span, e)),
         }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct LitValue<T> {
+    span: Span,
+    value: T,
+}
+impl<T: PartialEq> PartialEq for LitValue<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+impl<T: PartialEq> PartialEq<T> for LitValue<T> {
+    fn eq(&self, other: &T) -> bool {
+        self.value.eq(other)
+    }
+}
+
+macro_rules! impl_parse_lit_value_int {
+    ($($ty:ty),*) => {
+        $(
+        impl Parse for LitValue<$ty> {
+            fn parse(input: ParseStream) -> Result<Self> {
+                let lit = input.parse::<LitInt>()?;
+                Ok(Self {
+                    span: lit.span(),
+                    value: lit.base10_parse()?,
+                })
+            }
+        }
+        )*
+    };
+}
+
+impl_parse_lit_value_int!(u8, u16, u32, u64, u128);
+impl_parse_lit_value_int!(i8, i16, i32, i64, i128);
+
+impl Parse for LitValue<String> {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let lit = input.parse::<LitStr>()?;
+        Ok(LitValue {
+            span: lit.span(),
+            value: lit.value(),
+        })
+    }
+}
+
+impl Parse for LitValue<f32> {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let lit = input.parse::<LitFloat>()?;
+        Ok(LitValue {
+            span: lit.span(),
+            value: lit.base10_parse()?,
+        })
+    }
+}
+impl Parse for LitValue<f64> {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let lit = input.parse::<LitFloat>()?;
+        Ok(LitValue {
+            span: lit.span(),
+            value: lit.base10_parse()?,
+        })
     }
 }

@@ -324,7 +324,7 @@ fn test_struct_name_value() {
         pq!(#[attr(abc = "xyz")]),
         Attr {
             abc: NameValue {
-                span: Span::call_site(),
+                name_span: Span::call_site(),
                 value: pq!("xyz"),
             },
         },
@@ -340,7 +340,7 @@ fn test_struct_name_args() {
         pq!(#[attr(abc("xyz"))]),
         Attr {
             abc: NameArgs {
-                span: Span::call_site(),
+                name_span: Span::call_site(),
                 args: pq!("xyz"),
             },
         },

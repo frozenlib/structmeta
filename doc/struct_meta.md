@@ -7,6 +7,7 @@ Derive [`syn::parse::Parse`] for parsing attribute arguments.
 A type with `#[derive(StructMeta)]` can be used with [`syn::Attribute::parse_args`].
 
 ```rust
+# extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use structmeta::StructMeta;
@@ -17,7 +18,9 @@ struct MyAttr {
     msg: LitStr,
 }
 
+# const IGNORE_TOKENS: &str = stringify! {
 #[proc_macro_derive(MyMsg, attributes(my_msg))]
+# };
 pub fn derive_my_msg(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let mut msg = String::new();
@@ -31,7 +34,7 @@ pub fn derive_my_msg(input: TokenStream) -> TokenStream {
 }
 ```
 
-```rust
+```ignore
 #[derive(MyMsg)]
 #[my_msg(msg = "abc")]
 struct TestType;
@@ -44,6 +47,7 @@ assert_eq!(MSG, "abc");
 A type with `#[derive(StructMeta)]` can be used with `attr` parameter in attribute proc macro.
 
 ```rust
+# extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use structmeta::StructMeta;
@@ -53,7 +57,9 @@ use syn::{parse, parse_macro_input, DeriveInput, LitStr};
 struct MyAttr {
     msg: LitStr,
 }
+# const IGNORE_TOKENS: &str = stringify! {
 #[proc_macro_attribute]
+# };
 pub fn my_attr(attr: TokenStream, _item: TokenStream) -> TokenStream {
     let attr = parse::<MyAttr>(attr).unwrap();
     let msg = attr.msg.value();
@@ -61,7 +67,7 @@ pub fn my_attr(attr: TokenStream, _item: TokenStream) -> TokenStream {
 }
 ```
 
-```rust
+```ignore
 #[my_attr(msg = "xyz")]
 struct TestType;
 
@@ -84,20 +90,22 @@ The following field will be "Named parameter".
 - NameArgs style : `name(args)`
 - NameArgList style : `name(arg, arg, ...)`
 
-| field type (without span)   | field type (with span)     | style                               | can be use with `Option` |
-| --------------------------- | -------------------------- | ----------------------------------- | ------------------------ |
-| `bool` (TODO)               | `Flag`                     | `name`                              |                          |
-| `T`                         | `NameValue<T>`             | `name = value`                      | ✔                        |
-|                             | `NameValue<Option<T>>`     | `name = value` or `name`            | ✔                        |
-|                             | `NameArgs<T>`              | `name(args)`                        | ✔                        |
-|                             | `NameArgs<Option<T>>`      | `name(args)` or `name`              | ✔                        |
-| `Vec<T>`                    | `NameArgs<Vec<T>>`         | `name(arg, arg, ...)`               | ✔                        |
-|                             | `NameArgs<Option<Vec<T>>>` | `name(arg, arg, ...)` or `name`     | ✔                        |
-| `HashMap<String, T>` (TODO) | `HashMap<Ident, T>` (TODO) | `name1 = value, name2 = value, ...` |                          |
+| field type (without span) | field type (with span)       | style                           | can be use with `Option` |
+| ------------------------- | ---------------------------- | ------------------------------- | ------------------------ |
+| `bool`                    | [`Flag`]                     | `name`                          |                          |
+| `T`                       | [`NameValue<T>`]             | `name = value`                  | ✔                        |
+|                           | [`NameArgs<T>`]              | `name(args)`                    | ✔                        |
+|                           | [`NameArgs<Option<T>>`]      | `name(args)` or `name`          | ✔                        |
+| `Vec<T>`                  | [`NameArgs<Vec<T>>`]         | `name(arg, arg, ...)`           | ✔                        |
+|                           | [`NameArgs<Option<Vec<T>>>`] | `name(arg, arg, ...)` or `name` | ✔                        |
 
 The type `T` in the table above needs to implement `syn::parse::Parse`.
 
-The type in `field type (with span)` column of the table above has `span` member and holds `Span` of parameter name.
+The type in `field type (with span)` column of the table above holds `Span` of parameter name.
+
+Some types can be wrap with `Option` to make them optional parameters.
+
+Some types can be wrap with `HashMap<String, _>` to make them arbitrary name parameters.
 
 ## Unnamed parameter
 
@@ -128,13 +136,13 @@ The parameters must be in the following order.
 
 ## Helper attribute `#[struct_meta(...)]`
 
-### For struct
+### Struct attribute arguments
 
 | argument | effect                                                                                   |
 | -------- | ---------------------------------------------------------------------------------------- |
 | dump     | Causes a compile error and outputs the automatically generated code as an error message. |
 
-### For field
+### Field attribute arguments
 
 | argument     | effect                                             |
 | ------------ | -------------------------------------------------- |

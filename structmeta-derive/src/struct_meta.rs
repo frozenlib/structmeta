@@ -318,6 +318,11 @@ impl<'a> ParamInfo<'a> {
     }
 }
 
+struct FlattenParam<'a> {
+    info: ParamInfo<'a>,
+    ty: NamedParamType<'a>,
+}
+
 struct NamedParam<'a> {
     info: ParamInfo<'a>,
     name_span: Span,
