@@ -32,7 +32,7 @@ pub fn derive_to_tokens(input: DeriveInput) -> Result<TokenStream> {
     Ok(ts)
 }
 fn code_from_struct(data: &DataStruct) -> Result<TokenStream> {
-    let p = to_pattern(quote!(Self), &data.fields)?;
+    let p = to_pattern(quote!(Self), &data.fields);
     let ts = code_from_fields(&data.fields)?;
     let ts = quote! {
         let #p = self;
@@ -44,7 +44,7 @@ fn code_from_enum(data: &DataEnum) -> Result<TokenStream> {
     let mut arms = Vec::new();
     for variant in &data.variants {
         let ident = &variant.ident;
-        let p = to_pattern(quote!(Self::#ident), &variant.fields)?;
+        let p = to_pattern(quote!(Self::#ident), &variant.fields);
         let code = code_from_fields(&variant.fields)?;
         arms.push(quote! {
             #p => {
@@ -58,9 +58,9 @@ fn code_from_enum(data: &DataEnum) -> Result<TokenStream> {
         }
     })
 }
-fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
+fn to_pattern(self_path: TokenStream, fields: &Fields) -> TokenStream {
     let mut vars = Vec::new();
-    let ts = match fields {
+    match fields {
         Fields::Unit => self_path,
         Fields::Unnamed(_) => {
             for (index, field) in fields.iter().enumerate() {
@@ -77,8 +77,7 @@ fn to_pattern(self_path: TokenStream, fields: &Fields) -> Result<TokenStream> {
             }
             quote!( #self_path { #(#vars,)* } )
         }
-    };
-    Ok(ts)
+    }
 }
 struct Scope<'a> {
     ts: TokenStream,

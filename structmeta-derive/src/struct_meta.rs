@@ -123,12 +123,10 @@ impl<'a> Params<'a> {
         }
 
         let mut arms_unnamed = Vec::new();
-        let mut index = 0;
-        for p in &self.unnamed_optional {
+        for (index, p) in self.unnamed_optional.iter().enumerate() {
             ts.extend(p.info.build_let_none());
             arms_unnamed.push(p.build_arm_parse_value(index));
             p.build_ctor_arg(true, &mut ctor_args);
-            index += 1;
         }
         if let Some(p) = &self.unnamed_variadic {
             ts.extend(p.info.build_let_vec_new());
@@ -171,9 +169,9 @@ impl<'a> Params<'a> {
             }
         }
 
-        let flag_names = NamedParam::to_names(&flag_ps);
-        let name_value_names = NamedParam::to_names(&name_value_ps);
-        let name_args_names = NamedParam::to_names(&name_args_ps);
+        let flag_names = NamedParam::names(&flag_ps);
+        let name_value_names = NamedParam::names(&name_value_ps);
+        let name_args_names = NamedParam::names(&name_args_ps);
         let no_unnamed = self.unnamed_optional.is_empty() && self.unnamed_variadic.is_none();
         let ctor_args = match &self.fields {
             Fields::Named(_) => {
@@ -311,20 +309,18 @@ impl<'a> Param<'a> {
                 ty,
                 is_option,
             })
+        } else if let NamedParamType::Value { ty, is_vec } = ty {
+            Param::Unnamed(UnnamedParam {
+                info,
+                ty,
+                is_vec,
+                is_option,
+            })
         } else {
-            if let NamedParamType::Value { ty, is_vec } = ty {
-                Param::Unnamed(UnnamedParam {
-                    info,
-                    ty,
-                    is_vec,
-                    is_option,
-                })
-            } else {
-                bail!(
-                    info.span(),
-                    "this field type cannot be used as unnamed parameter."
-                )
-            }
+            bail!(
+                info.span(),
+                "this field type cannot be used as unnamed parameter."
+            )
         };
         Ok(this)
     }
@@ -404,8 +400,8 @@ impl<'a> NamedParam<'a> {
             }
         }
     }
-    fn to_names<'b>(ps: &[&'b Self]) -> Vec<&'b str> {
-        ps.into_iter().map(|x| x.name.as_str()).collect()
+    fn names<'b>(ps: &[&'b Self]) -> Vec<&'b str> {
+        ps.iter().map(|x| x.name.as_str()).collect()
     }
     fn build_ctor_arg(&self, ctor_args: &mut [TokenStream]) {
         let temp_ident = &self.info.temp_ident;

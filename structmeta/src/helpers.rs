@@ -11,6 +11,7 @@ pub enum NameIndex {
     NameArgs(std::result::Result<usize, Ident>),
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn try_parse_name(
     input: ParseStream,
     flag_names: &[&str],
@@ -89,12 +90,7 @@ fn name_index_of(
     }
 }
 fn find(names: &[&str], ident: &Ident) -> Option<usize> {
-    for i in 0..names.len() {
-        if ident == names[i] {
-            return Some(i);
-        }
-    }
-    None
+    names.iter().position(|name| ident == name)
 }
 fn msg(expected: &[String]) -> String {
     if expected.is_empty() {
@@ -113,6 +109,6 @@ fn msg(expected: &[String]) -> String {
             m.push_str(&expected[i]);
         }
     }
-    m.push_str(".");
+    m.push('.');
     m
 }
