@@ -4,4 +4,5 @@ members = [
     "structmeta-derive",    
     "structmeta-tests",    
 ]
+resolver = "2"
 
