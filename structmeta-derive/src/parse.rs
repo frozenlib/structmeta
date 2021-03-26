@@ -44,8 +44,8 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
     ts.extend(quote!(
         use syn::ext::*;
     ));
-    let mut is_forked = false;
-    let mut input_moved = false;
+    let mut input_is_forked = false;
+    let mut input_is_moved = false;
     for index in 0..data.variants.len() {
         let variant = &data.variants[index];
         let variant_ident = &variant.ident;
@@ -64,13 +64,13 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
             }
         };
         let code = if peeks.is_empty() {
-            if is_last && !is_forked {
-                input_moved = true;
+            if is_last && !input_is_forked {
+                input_is_moved = true;
                 quote! {
                     #fn_ident(input)
                 }
             } else {
-                is_forked = true;
+                input_is_forked = true;
                 quote! {
                     let fork = input.fork();
                     if let Ok(value) = #fn_ident(&fork) {
@@ -95,7 +95,7 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
             #code
         });
     }
-    if !input_moved {
+    if !input_is_moved {
         ts.extend(quote! {
             Err(input.error("parse failed."))
         });
