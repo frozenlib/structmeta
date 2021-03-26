@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use structmeta::StructMeta;
-use syn::{parse, parse_macro_input, DeriveInput, LitStr};
+use structmeta::{Parse, StructMeta};
+use syn::{parse, parse2, parse_macro_input, DeriveInput, LitInt, LitStr};
 
 #[derive(StructMeta)]
 struct MyAttr {
@@ -26,4 +26,18 @@ pub fn my_attr(attr: TokenStream, _item: TokenStream) -> TokenStream {
     let attr = parse::<MyAttr>(attr).unwrap();
     let msg = attr.msg.value();
     quote!(const MSG: &str = #msg;).into()
+}
+
+#[derive(Parse)]
+enum SingleVariant {
+    A(LitInt, LitStr),
+}
+
+#[proc_macro]
+pub fn parse_single_variant(input: TokenStream) -> TokenStream {
+    match parse2::<SingleVariant>(input.into()) {
+        Ok(_) => quote!(),
+        Err(e) => e.into_compile_error(),
+    }
+    .into()
 }
