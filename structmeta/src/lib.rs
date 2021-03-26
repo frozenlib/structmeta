@@ -210,6 +210,32 @@ Variant where `#[parse(peek)]` is not specified will fork input and parse.
 
 If the peek fails or the parsing of the forked input fails, the subsequent variant will be parsed.
 
+```rust
+use syn::{LitInt, LitStr};
+#[derive(structmeta::Parse)]
+enum Example {
+    A(#[parse(peek)] LitInt, LitInt),
+    B(LitStr),
+}
+
+// The following code will be generated.
+/*
+impl syn::parse::Parse for Example {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        if input.peek(LitInt) {
+            let a_0 = input.parse()?;
+            let a_1 = input.parse()?;
+            return Ok(Example::A(a_0, a_1));
+        }
+        let b_0 = input.parse()?;
+        Ok(Example::B(b_0))
+    }
+}
+*/
+```
+
+`#[parse(peek)]` can specified on first three token for each variants.
+
 ## `#[parse(any)]`
 
 When parsing `Ident`, allow values that cannot be used as identifiers, such as keywords.

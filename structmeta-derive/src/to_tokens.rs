@@ -1,5 +1,5 @@
 use crate::{syn_utils::*, to_tokens_attribute::*};
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Delimiter, Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::unreachable;
 use syn::{
@@ -86,45 +86,23 @@ struct Scope<'a> {
 struct Surround<'a> {
     ident: Ident,
     field: &'a Field,
-    kind: SurroundKind,
+    delimiter: Delimiter,
 }
 
-#[derive(PartialEq, Debug, Clone, Copy)]
-enum SurroundKind {
-    Bracket,
-    Brace,
-    Paren,
+fn delimiter_from_open_char(value: char) -> Option<Delimiter> {
+    match value {
+        '[' => Some(Delimiter::Bracket),
+        '{' => Some(Delimiter::Brace),
+        '(' => Some(Delimiter::Parenthesis),
+        _ => None,
+    }
 }
-impl SurroundKind {
-    fn close(&self) -> char {
-        match self {
-            SurroundKind::Bracket => ']',
-            SurroundKind::Brace => '}',
-            SurroundKind::Paren => ')',
-        }
-    }
-    fn from_open(value: char) -> Option<Self> {
-        match value {
-            '[' => Some(Self::Bracket),
-            '{' => Some(Self::Brace),
-            '(' => Some(Self::Paren),
-            _ => None,
-        }
-    }
-    fn from_close(value: char) -> Option<Self> {
-        match value {
-            ']' => Some(Self::Bracket),
-            '}' => Some(Self::Brace),
-            ')' => Some(Self::Paren),
-            _ => None,
-        }
-    }
-    fn type_ident(&self) -> Ident {
-        match self {
-            SurroundKind::Bracket => parse_quote!(Bracket),
-            SurroundKind::Brace => parse_quote!(Brace),
-            SurroundKind::Paren => parse_quote!(Paren),
-        }
+fn delimiter_from_close_char(value: char) -> Option<Delimiter> {
+    match value {
+        ']' => Some(Delimiter::Bracket),
+        '}' => Some(Delimiter::Brace),
+        ')' => Some(Delimiter::Parenthesis),
+        _ => None,
     }
 }
 
@@ -136,23 +114,46 @@ impl<'a> Scope<'a> {
         }
     }
 }
-impl<'a> Scope<'a> {
-    fn into_code(self, surround_kind: Option<SurroundKind>) -> Option<TokenStream> {
-        if let Some(s) = self.surround {
-            let mut mismatch = false;
-            if let Some(surround_kind) = surround_kind {
-                mismatch = s.kind != surround_kind;
-            }
-            if !mismatch {
-                let ty = s.kind.type_ident();
-                let ident = &s.ident;
-                let ts = self.ts;
-                return Some(quote_spanned!(s.field.span()=>
-                ::syn::token::#ty::surround(#ident, tokens, |tokens| { #ts });
-                ));
-            }
+fn close_char_of(delimiter: Delimiter) -> char {
+    match delimiter {
+        Delimiter::Bracket => ']',
+        Delimiter::Brace => '}',
+        Delimiter::Parenthesis => ')',
+        _ => unreachable!("unsupported delimiter"),
+    }
+}
+
+impl<'a> Surround<'a> {
+    fn token_type_ident(&self) -> Ident {
+        match self.delimiter {
+            Delimiter::Bracket => parse_quote!(Bracket),
+            Delimiter::Brace => parse_quote!(Brace),
+            Delimiter::Parenthesis => parse_quote!(Paren),
+            _ => unreachable!("unsupported delimiter"),
         }
-        None
+    }
+}
+impl<'a> Scope<'a> {
+    fn into_code(self, delimiter: Option<Delimiter>, span: Span) -> Result<TokenStream> {
+        if let Some(s) = self.surround {
+            if let Some(delimiter) = delimiter {
+                if s.delimiter != delimiter {
+                    bail!(
+                        span,
+                        "mismatched closing delimiter expected `{}`, found `{}`.",
+                        close_char_of(s.delimiter),
+                        close_char_of(delimiter),
+                    )
+                }
+            }
+            let ty = s.token_type_ident();
+            let ident = &s.ident;
+            let ts = self.ts;
+            return Ok(quote_spanned!(s.field.span()=>
+            ::syn::token::#ty::surround(#ident, tokens, |tokens| { #ts });
+            ));
+        }
+        Ok(quote!())
     }
 }
 fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
@@ -165,25 +166,20 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
                 let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
                 for token in &attr.token {
                     for c in token.value().chars() {
-                        if let Some(kind) = SurroundKind::from_open(c) {
+                        if let Some(delimiter) = delimiter_from_open_char(c) {
                             scopes.push(Scope::new(Some(Surround {
                                 ident: ident.clone(),
                                 field,
-                                kind,
+                                delimiter,
                             })));
                             field_to_tokens = false;
-                        } else if let Some(kind) = SurroundKind::from_close(c) {
+                        } else if let Some(delimiter) = delimiter_from_close_char(c) {
                             let scope = scopes.pop().unwrap();
-                            if let Some(code) = scope.into_code(Some(kind)) {
-                                scopes.last_mut().unwrap().ts.extend(code);
-                            } else {
-                                bail!(
-                                    token.span(),
-                                    "mismatched closing delimiter expected `{}`, found `{}`.",
-                                    kind.close(),
-                                    c
-                                );
-                            }
+                            scopes
+                                .last_mut()
+                                .unwrap()
+                                .ts
+                                .extend(scope.into_code(Some(delimiter), token.span())?);
                         } else {
                             bail!(
                                 token.span(),
@@ -204,8 +200,11 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
         if scopes.is_empty() {
             return Ok(scope.ts);
         }
-        let code = scope.into_code(None).unwrap();
-        scopes.last_mut().unwrap().ts.extend(code);
+        scopes
+            .last_mut()
+            .unwrap()
+            .ts
+            .extend(scope.into_code(None, Span::call_site())?);
     }
     unreachable!()
 }
