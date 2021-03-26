@@ -159,12 +159,17 @@ fn code_from_fields(
                                 use_parse = false;
                                 let parse_bracket = to_parse_bracket(c);
                                 let input_old = &scopes.last().unwrap().input;
-                                let input = format_ident!("input{}", var_ident);
+                                let input = format_ident!("input_{}", index);
+                                let ty = &field.ty;
                                 let code = quote_spanned!(field.span()=>
                                     let #input;
                                     let #var_ident = ::syn::#parse_bracket!(#input in #input_old);
+                                    let #var_ident : #ty = #var_ident;
                                     let #input = &#input;
                                 );
+                                // We need `let #var_ident : #ty = #var_ident;` to make error messages easier to understand.
+                                // Try remove this line and run compile fail tests for details.
+
                                 ts.extend(code);
                                 scopes.push(Scope {
                                     close: Some(to_close(c)),
@@ -202,7 +207,7 @@ fn code_from_fields(
             if let Some(peek) = peek {
                 let span = peek.span();
                 if !is_root {
-                    bail!(span, "`peek` cannot be specified in [], () or {{}}.");
+                    bail!(span, "`#[parse(peek)]` cannot be specified with a field enclosed by `[]`, `()` or `{}`.");
                 }
                 if let Some(non_peek_field) = &non_peek_field {
                     bail!(

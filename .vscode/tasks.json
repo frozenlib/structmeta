@@ -56,7 +56,10 @@
       "presentation": {
         "panel": "dedicated",
         "clear": true
-      }
+      },
+      "dependsOn": [
+        "sync doc"
+      ],
     },
     {
       "type": "shell",

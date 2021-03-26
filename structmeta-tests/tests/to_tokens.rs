@@ -6,7 +6,7 @@ use syn::parse_quote;
 use test_utils::*;
 
 #[test]
-fn derive_for_struct() {
+fn for_struct() {
     #[derive(ToTokens)]
     struct TestStruct {
         name: syn::Ident,
@@ -23,7 +23,7 @@ fn derive_for_struct() {
     assert_eq_ts(s, ts);
 }
 #[test]
-fn derive_for_tuple_struct() {
+fn for_tuple_struct() {
     #[derive(ToTokens)]
     struct TestStruct(syn::Ident, syn::Token![=], syn::Expr);
 
@@ -33,7 +33,7 @@ fn derive_for_tuple_struct() {
 }
 
 #[test]
-fn derive_for_unit_struct() {
+fn for_unit_struct() {
     #[derive(ToTokens)]
     struct TestStruct;
 
@@ -43,7 +43,7 @@ fn derive_for_unit_struct() {
 }
 
 #[test]
-fn derive_for_enum() {
+fn for_enum() {
     #[derive(ToTokens)]
     enum TestEnum {
         A {

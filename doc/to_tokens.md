@@ -7,29 +7,41 @@ use syn::LitInt;
 
 #[derive(structmeta::ToTokens)]
 struct Example(LitInt, LitInt);
+```
 
-// The following code will be generated.
-/*
+Code like this will be generated:
+
+```rust
+# use syn::LitInt;
+# struct Example(LitInt, LitInt);
 impl quote::ToTokens for Example {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         self.0.to_tokens(tokens);
         self.1.to_tokens(tokens);
     }
 }
-*/
 ```
 
 `#[derive(ToTokens)]` can also be specified for enum.
 
 ```rust
+use syn::{LitInt, LitStr};
+
 #[derive(structmeta::ToTokens)]
 enum Example {
-    A(syn::LitInt),
-    B(syn::LitStr),
+    A(LitInt),
+    B(LitStr),
 }
+```
 
-// The following code will be generated.
-/*
+Code like this will be generated:
+
+```rust
+# use syn::{LitInt, LitStr};
+# enum Example {
+#    A(LitInt),
+#    B(LitStr),
+# }
 impl quote::ToTokens for Example {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
@@ -38,7 +50,6 @@ impl quote::ToTokens for Example {
         }
     }
 }
-*/
 ```
 
 ## Helper attributes
@@ -69,9 +80,19 @@ struct Example {
     #[to_tokens("]")]
     z: LitInt,
 }
+```
 
-// The following code will be generated.
-/*
+Code like this will be generated:
+
+```rust
+# use syn::{token, LitInt};
+#
+# struct Example {
+#    x: LitInt,
+#    bracket_token: token::Bracket,
+#    y: LitInt,
+#    z: LitInt,
+# }
 impl quote::ToTokens for Example {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         self.x.to_tokens(tokens);
@@ -81,7 +102,6 @@ impl quote::ToTokens for Example {
         self.z.to_tokens(tokens);
     }
 }
-*/
 ```
 
 ## `#[to_tokens("(")]`, `#[to_tokens(")")]`

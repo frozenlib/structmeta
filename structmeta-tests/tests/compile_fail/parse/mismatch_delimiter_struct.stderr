@@ -1,0 +1,7 @@
+error[E0308]: mismatched types
+ --> $DIR/mismatch_delimiter_struct.rs:6:5
+  |
+6 |     braket_token: syn::token::Bracket,
+  |     ^^^^^^^^^^^^  ------------------- expected due to this
+  |     |
+  |     expected struct `syn::token::Bracket`, found struct `syn::token::Paren`
