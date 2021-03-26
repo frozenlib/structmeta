@@ -44,8 +44,12 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
     ts.extend(quote!(
         use syn::ext::*;
     ));
-    for variant in &data.variants {
+    let mut is_forked = false;
+    let mut input_moved = false;
+    for index in 0..data.variants.len() {
+        let variant = &data.variants[index];
         let variant_ident = &variant.ident;
+        let is_last = index == data.variants.len() - 1;
         let fn_ident = format_ident!("_parse_{}", &variant.ident);
         let mut peeks = Vec::new();
         let fn_expr = code_from_fields(
@@ -60,11 +64,19 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
             }
         };
         let code = if peeks.is_empty() {
-            quote! {
-                let fork = input.fork();
-                if let Ok(value) = #fn_ident(&fork) {
-                    ::syn::parse::discouraged::Speculative::advance_to(input, &fork);
-                    return Ok(value);
+            if is_last && !is_forked {
+                input_moved = true;
+                quote! {
+                    #fn_ident(input)
+                }
+            } else {
+                is_forked = true;
+                quote! {
+                    let fork = input.fork();
+                    if let Ok(value) = #fn_ident(&fork) {
+                        ::syn::parse::discouraged::Speculative::advance_to(input, &fork);
+                        return Ok(value);
+                    }
                 }
             }
         } else {
@@ -83,9 +95,11 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
             #code
         });
     }
-    ts.extend(quote! {
-        Err(input.error("parse failed."))
-    });
+    if !input_moved {
+        ts.extend(quote! {
+            Err(input.error("parse failed."))
+        });
+    }
     Ok(ts)
 }
 fn to_predicate(index: usize, peek: &PeekItem) -> Result<TokenStream> {

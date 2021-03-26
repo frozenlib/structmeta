@@ -1,5 +1,5 @@
-error: parse failed.
- --> $DIR/single_variant_fail.rs:1:41
+error: expected string literal
+ --> $DIR/single_variant_fail.rs:1:44
   |
 1 | structmeta_tests::parse_single_variant!(10 10);
-  |                                         ^^
+  |                                            ^^

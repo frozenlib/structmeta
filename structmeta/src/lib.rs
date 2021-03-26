@@ -77,6 +77,8 @@ By default, all subsequent fields are enclosed.
 To restrict the enclosing fields, specify `#[to_tokens("]")]` for the field after the end of the enclosure.
 
 ```rust
+use syn::{token, LitInt};
+
 #[derive(structmeta::ToTokens)]
 struct Example {
     x: LitInt,
