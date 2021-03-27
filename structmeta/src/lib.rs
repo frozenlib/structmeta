@@ -164,9 +164,9 @@ Code like this will be generated:
 # struct Example(LitInt, LitStr);
 impl syn::parse::Parse for Example {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let value_0 = input.parse()?;
-        let value_1 = input.parse()?;
-        return Ok(Example(value_0, value_1));
+        let _0 = input.parse()?;
+        let _1 = input.parse()?;
+        return Ok(Example(_0, _1));
     }
 }
 ```
@@ -309,9 +309,8 @@ Code like this will be generated:
 
 ```rust
 # use syn::{LitInt, LitStr};
-# #[derive(structmeta::Parse)]
 # enum Example {
-#     A(#[parse(peek)] LitInt, LitInt),
+#     A(LitInt, LitInt),
 #     B(LitStr),
 # }
 impl syn::parse::Parse for Example {
@@ -341,26 +340,88 @@ enum Example {
 Since the tokens enclosed by the delimiter is treated as a single token tree, you can also specify `#[parse(peek)]` to the field with `#[to_tokens("]")]`, `#[to_tokens("}")]`, `#[to_tokens(")")]`.
 
 ```rust
-use syn::{LitInt, LitStr};
+use syn::{token, LitInt, LitStr};
 #[derive(structmeta::Parse)]
 enum Example {
-    A(#[to_tokens("{")] LitInt, #[parse(peek)]LitInt, #[parse(peek)]LitInt),
-    B(#[parse(peek)] LitStr),
+    A {
+        #[parse(peek)]
+        #[to_tokens("{")]
+        a: token::Brace,
+        b: LitInt,
+        c: LitInt,
+        #[to_tokens("}")]
+        #[parse(peek)]
+        d: LitInt,
+    },
 }
-
 ```
 
 To use `#[parse(peek)]` for a field that type is `Ident`, use `syn::Ident` insted of `proc_macro2::Ident`.
+
+```compile_fail
+#[derive(structmeta::Parse)]
+enum ExampleNg {
+    A(#[parse(peek)] proc_macro2::Ident),
+}
+```
+
+```rust
+#[derive(structmeta::Parse)]
+enum ExampleOk {
+    A(#[parse(peek)] syn::Ident),
+}
+```
 
 ## `#[parse(any)]`
 
 When parsing `Ident`, allow values that cannot be used as identifiers, such as keywords.
 
-In other words, instead of `Ident::parse` and `Ident::peek`, use `Ident::parse_any` and `Ident::peek_any`.
+In other words, `Ident::parse_any` and `Ident::peek_any` was generated instead of `Ident::parse` and `Ident::peek`.
+
+```rust
+use quote::quote;
+use structmeta::Parse;
+use syn::{parse2, Ident};
+
+#[derive(Parse)]
+struct WithAny(#[parse(any)] Ident);
+
+#[derive(Parse)]
+struct WithoutAny(Ident);
+
+assert_eq!(parse2::<WithAny>(quote!(self)).is_ok(), true);
+assert_eq!(parse2::<WithoutAny>(quote!(self)).is_ok(), false);
+```
 
 ## `#[parse(terminated)]`
 
-Use `parse_terminated` to parse.
+Use [`Punctuated::parse_terminated`](syn::punctuated::Punctuated::parse_terminated) to parse.
+
+```rust
+use quote::quote;
+use structmeta::Parse;
+use syn::{parse2, punctuated::Punctuated, Ident, Token};
+#[derive(Parse)]
+struct Example(#[parse(terminated)] Punctuated<Ident, Token![,]>);
+assert_eq!(parse2::<Example>(quote!(a, b, c)).is_ok(), true);
+```
+
+`terminated` can also be used with `any`.
+
+```rust
+use quote::quote;
+use structmeta::Parse;
+use syn::{parse2, punctuated::Punctuated, Ident, Token};
+
+#[derive(Parse)]
+struct WithAny(#[parse(terminated, any)] Punctuated<Ident, Token![,]>);
+
+#[derive(Parse)]
+struct WithoutAny(#[parse(terminated)] Punctuated<Ident, Token![,]>);
+
+assert_eq!(parse2::<WithAny>(quote!(self, self)).is_ok(), true);
+assert_eq!(parse2::<WithoutAny>(quote!(self, self)).is_ok(), false);
+```
 
 ## `#[parse(dump)]`
 
