@@ -724,9 +724,73 @@ The type `T` in the table above needs to implement `syn::parse::Parse`.
 
 ## Required unnamed parameter
 
+Fields of the type that implement `syn::parse::Parse` will be required parameters.
+
+```rust
+use structmeta::StructMeta;
+use syn::{parse_quote, Attribute, LitStr, Result};
+
+#[derive(StructMeta)]
+struct Args(LitStr);
+
+let attr: Attribute = parse_quote!(#[attr()]);
+let args: Result<Args> = attr.parse_args();
+assert!(args.is_err());
+
+let attr: Attribute = parse_quote!(#[attr("a")]);
+let args: Args = attr.parse_args()?;
+assert_eq!(args.0.value(), "a");
+# syn::Result::Ok(())
+```
+
 ## Optional unnamed parameter
 
+Fields of type `Option` will be optional parameters.
+
+```rust
+use structmeta::StructMeta;
+use syn::{parse_quote, Attribute, LitStr};
+
+#[derive(StructMeta)]
+struct Args(Option<LitStr>);
+
+let attr: Attribute = parse_quote!(#[attr()]);
+let args: Args = attr.parse_args()?;
+assert!(args.0.is_none());
+
+let attr: Attribute = parse_quote!(#[attr("a")]);
+let args: Args = attr.parse_args()?;
+assert_eq!(args.1.unwrap().value(), "a");
+# syn::Result::Ok(())
+```
+
 ## Variadic unnamed parameter
+
+If you use `Vec` as the field type, multiple arguments can be stored in a single field.
+
+```rust
+use structmeta::StructMeta;
+use syn::{parse_quote, Attribute, LitStr};
+
+#[derive(StructMeta)]
+struct Args(Vec<LitStr>);
+
+let attr: Attribute = parse_quote!(#[attr()]);
+let args: Args = attr.parse_args()?;
+assert_eq!(args.0.len(), 0);
+
+let attr: Attribute = parse_quote!(#[attr("a")]);
+let args: Args = attr.parse_args()?;
+assert_eq!(args.0.len(), 1);
+assert_eq!(args.0[0].value(), "a");
+
+let attr: Attribute = parse_quote!(#[attr("a", "b")]);
+let args: Args = attr.parse_args()?;
+assert_eq!(args.0.len(), 2);
+assert_eq!(args.0[0].value(), "a");
+assert_eq!(args.0[1].value(), "b");
+# syn::Result::Ok(())
+```
 
 # Parameter order
 
