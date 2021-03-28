@@ -376,9 +376,11 @@ fn test_struct_map() {
     );
 }
 
+#[track_caller]
 fn check<T: Parse + PartialEq + Debug>(input: Attribute, expected: T) {
     check_msg(input, expected, "")
 }
+#[track_caller]
 fn check_msg<T: Parse + PartialEq + Debug>(input: Attribute, expected: T, msg: &str) {
     match input.parse_args::<T>() {
         Ok(value) => {

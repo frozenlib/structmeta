@@ -319,10 +319,13 @@ fn parse_terminated_any() {
     assert_parse::<TestStruct>(quote!(a, b, struct));
 }
 
+#[track_caller]
 fn assert_parse<T: Parse + ToTokens>(ts: TokenStream) {
     let value: T = syn::parse2(ts.clone()).expect("syn::parse2 failed.");
     assert_eq_ts(value, ts);
 }
+
+#[track_caller]
 fn assert_parse_fail<T: Parse + ToTokens>(ts: TokenStream) {
     let value: syn::Result<T> = syn::parse2(ts.clone());
     if value.is_ok() {
