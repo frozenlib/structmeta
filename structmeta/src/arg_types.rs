@@ -1,5 +1,7 @@
 use proc_macro2::Span;
 /// `name` style attribute argument.
+///
+/// See [`#[derive(StructMeta)]`](macro@crate::StructMeta) documentation for details.
 #[derive(Clone, Debug, Default)]
 pub struct Flag {
     pub span: Option<Span>,
@@ -24,6 +26,8 @@ impl From<bool> for Flag {
 }
 
 /// `name = value` style attribute argument.
+///
+/// See [`#[derive(StructMeta)]`](macro@crate::StructMeta) documentation for details.
 #[derive(Copy, Clone, Debug)]
 pub struct NameValue<T> {
     pub name_span: Span,
@@ -36,6 +40,8 @@ impl<T: PartialEq> PartialEq for NameValue<T> {
 }
 
 /// `name(value)` style attribute argument.
+///
+/// See [`#[derive(StructMeta)]`](macro@crate::StructMeta) documentation for details.
 #[derive(Copy, Clone, Debug)]
 pub struct NameArgs<T> {
     pub name_span: Span,
