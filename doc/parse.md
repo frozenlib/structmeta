@@ -190,7 +190,7 @@ impl syn::parse::Parse for Example {
 }
 ```
 
-`#[parse(peek)]` can specified on first three token tree for each variants.
+`#[parse(peek)]` can be specified on the first three `TokenTree` for each variant.
 
 ```rust
 use syn::{LitInt, LitStr};

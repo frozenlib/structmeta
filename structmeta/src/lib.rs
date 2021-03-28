@@ -345,7 +345,7 @@ impl syn::parse::Parse for Example {
 }
 ```
 
-`#[parse(peek)]` can specified on first three token tree for each variants.
+`#[parse(peek)]` can be specified on the first three `TokenTree` for each variant.
 
 ```rust
 use syn::{LitInt, LitStr};
@@ -537,7 +537,7 @@ With the above type as P (`bool` and `Flag` are excluded), you can also use the 
 
 ## Flag style
 
-A field with type `bool` will be a parameter that specifies only its name.
+A field with the type `bool` will be a parameter that specifies only its name.
 
 ```rust
 use structmeta::StructMeta;
