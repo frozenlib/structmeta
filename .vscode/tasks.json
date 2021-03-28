@@ -58,7 +58,7 @@
         "clear": true
       },
       "dependsOn": [
-        "sync doc"
+        "include doc"
       ],
     },
     {
@@ -144,7 +144,7 @@
         "clear": true
       },
       "dependsOn": [
-        "sync doc"
+        "include doc"
       ],
     },
     {
@@ -170,8 +170,8 @@
     },
     {
       "type": "shell",
-      "label": "sync doc",
-      "command": "sync-doc",
+      "label": "include doc",
+      "command": "include-doc",
       "args": [
         "${workspaceFolder}"
       ],
