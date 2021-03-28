@@ -7,8 +7,8 @@ See [`#[derive(StructMeta)]`](macro@StructMeta) documentation for details.
 #[doc(hidden)]
 pub mod helpers;
 
-mod easy_syntax;
-pub use easy_syntax::*;
+// mod easy_syntax;
+// pub use easy_syntax::*;
 
 mod arg_types;
 pub use arg_types::*;
