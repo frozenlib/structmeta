@@ -63,7 +63,7 @@ impl syn::parse::Parse for Example {
 }
 ```
 
-## Helper attributes
+# Helper attributes
 
 |                                                                    | struct | enum | varaint | field |
 | ------------------------------------------------------------------ | ------ | ---- | ------- | ----- |

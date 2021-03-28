@@ -1,7 +1,14 @@
 [package]
 name = "structmeta"
 version = "0.1.0"
-authors = ["frozenlib <frozenlib@users.noreply.github.com>"]
+authors = ["frozenlib"]
+license = "MIT OR Apache-2.0"
+readme = "../README.md"
+repository = "https://github.com/frozenlib/structmeta"
+documentation = "https://docs.rs/structmeta/"
+keywords = ["derive", "parse", "attribute", "syn", "totokens"]
+categories = ["development-tools::procedural-macro-helpers"]
+description = "Parse Rust's attribute arguments by defining a struct."
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

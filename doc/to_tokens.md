@@ -52,7 +52,7 @@ impl quote::ToTokens for Example {
 }
 ```
 
-## Helper attributes
+# Helper attributes
 
 |                                                                    | struct | enum | varaint | field |
 | ------------------------------------------------------------------ | ------ | ---- | ------- | ----- |
