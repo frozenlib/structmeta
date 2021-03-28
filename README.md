@@ -6,6 +6,10 @@
 
 Parse Rust's attribute arguments by defining a struct.
 
+## Documentation
+
+See [`#[derive(StructMeta)]` documentation](https://docs.rs/structmeta/latest/structmeta/derive.StructMeta.html) for details.
+
 ## Example
 
 ```rust
