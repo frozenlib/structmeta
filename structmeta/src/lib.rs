@@ -491,10 +491,11 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr("xyz", b = 10)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a.value(), "xyz");
-assert_eq!(args.b.base10_parse::<u32>().unwrap(), 10);
+assert_eq!(args.b.base10_parse::<u32>()?, 10);
 assert!(args.c.is_none());
+# syn::Result::Ok(())
 ```
 
 # Named parameter
@@ -551,14 +552,15 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a, true);
 assert_eq!(args.b, false);
 
 let attr: Attribute = parse_quote!(#[attr(a, b)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a, true);
 assert_eq!(args.b, true);
+# syn::Result::Ok(())
 ```
 
 If you use `Flag` instead of `bool`, you will get its `Span` when the argument is specified.
@@ -573,10 +575,11 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 if let Some(_span) = args.a.span {
     // Use span.
 }
+# syn::Result::Ok(())
 ```
 
 ## NameValue style
@@ -594,9 +597,10 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a = "abc", b = 10)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a.value(), "abc");
-assert_eq!(args.b.value.base10_parse::<u32>().unwrap(), 10);
+assert_eq!(args.b.value.base10_parse::<u32>()?, 10);
+# syn::Result::Ok(())
 ```
 
 ## NameArgs style
@@ -614,9 +618,10 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a("abc"), b(10))]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a.args.value(), "abc");
-assert_eq!(args.b.args.base10_parse::<u32>().unwrap(), 10);
+assert_eq!(args.b.args.base10_parse::<u32>()?, 10);
+# syn::Result::Ok(())
 ```
 
 ## NameArgs or Flag style
@@ -634,9 +639,10 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a, b(10))]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert!(args.a.args.is_none());
-assert_eq!(args.b.args.unwrap().base10_parse::<u32>().unwrap(), 10);
+assert_eq!(args.b.args.unwrap().base10_parse::<u32>()?, 10);
+# syn::Result::Ok(())
 ```
 
 ## NameArgList style
@@ -653,16 +659,17 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a())]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a.args.len(), 0);
 
 let attr: Attribute = parse_quote!(#[attr(a("x"))]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a.args.len(), 1);
 
 let attr: Attribute = parse_quote!(#[attr(a("x", "y"))]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.a.args.len(), 2);
+# syn::Result::Ok(())
 ```
 
 ## NameArgList or Flag style
@@ -679,20 +686,21 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(abc)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.abc.args.is_none(), true);
 
 let attr: Attribute = parse_quote!(#[attr(abc())]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.abc.args.unwrap().len(), 0);
 
 let attr: Attribute = parse_quote!(#[attr(abc("x"))]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.abc.args.unwrap().len(), 1);
 
 let attr: Attribute = parse_quote!(#[attr(abc("x", "y"))]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert_eq!(args.abc.args.unwrap().len(), 2);
+# syn::Result::Ok(())
 ```
 
 ## Optional named parameter
@@ -710,14 +718,15 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a = "abc")]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert!(args.a.is_some());
 assert!(args.b.is_none());
 
 let attr: Attribute = parse_quote!(#[attr(b = 10)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert!(args.a.is_none());
 assert!(args.b.is_some());
+# syn::Result::Ok(())
 ```
 
 ## Rest named parameter
@@ -736,11 +745,12 @@ struct Args {
 }
 
 let attr: Attribute = parse_quote!(#[attr(a = 10, b = 20, c = 30)]);
-let args: Args = attr.parse_args().unwrap();
+let args: Args = attr.parse_args()?;
 assert!(args.a.is_some());
 let mut keys: Vec<_> = args.rest.keys().collect();
 keys.sort();
 assert_eq!(keys, vec!["b", "c"]);
+# syn::Result::Ok(())
 ```
 
 # Unnamed parameter
@@ -801,7 +811,7 @@ assert!(args.0.is_none());
 
 let attr: Attribute = parse_quote!(#[attr("a")]);
 let args: Args = attr.parse_args()?;
-assert_eq!(args.1.unwrap().value(), "a");
+assert_eq!(args.0.unwrap().value(), "a");
 # syn::Result::Ok(())
 ```
 
