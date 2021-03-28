@@ -327,7 +327,7 @@ fn assert_parse<T: Parse + ToTokens>(ts: TokenStream) {
 
 #[track_caller]
 fn assert_parse_fail<T: Parse + ToTokens>(ts: TokenStream) {
-    let value: syn::Result<T> = syn::parse2(ts.clone());
+    let value: syn::Result<T> = syn::parse2(ts);
     if value.is_ok() {
         panic!("expect parse failed, but parse succeeded.");
     }
