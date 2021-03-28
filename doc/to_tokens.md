@@ -1,5 +1,14 @@
 Derive [`quote::ToTokens`] for syntax tree node.
 
+- [Example](#example)
+- [Helper attributes](#helper-attributes)
+  - [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-to_tokens)
+  - [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-to_tokens-1)
+  - [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-to_tokens-2)
+  - [`#[to_tokens(dump)]`](#to_tokensdump)
+
+# Example
+
 `#[derive(ToTokens)]` generates an implementation of `ToTokens` that calls [`ToTokens::to_tokens`](quote::ToTokens::to_tokens) for each field.
 
 ```rust

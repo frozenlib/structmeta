@@ -1,5 +1,17 @@
 Derive [`syn::parse::Parse`] for syntax tree node.
 
+- [Example](#example)
+- [Helper attributes](#helper-attributes)
+  - [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-to_tokens)
+  - [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-to_tokens-1)
+  - [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-to_tokens-2)
+  - [`#[parse(peek)]`](#parsepeek)
+  - [`#[parse(any)]`](#parseany)
+  - [`#[parse(terminated)]`](#parseterminated)
+  - [`#[parse(dump)]`](#parsedump)
+
+# Example
+
 `#[derive(Parse)]` generates an implementation of `Parse` that calls [`Parse::parse`](syn::parse::Parse::parse) for each field.
 
 ```rust

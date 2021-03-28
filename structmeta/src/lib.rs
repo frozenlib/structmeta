@@ -19,6 +19,15 @@ use syn::{
 /**
 Derive [`quote::ToTokens`] for syntax tree node.
 
+- [Example](#example)
+- [Helper attributes](#helper-attributes)
+  - [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-to_tokens)
+  - [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-to_tokens-1)
+  - [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-to_tokens-2)
+  - [`#[to_tokens(dump)]`](#to_tokensdump)
+
+# Example
+
 `#[derive(ToTokens)]` generates an implementation of `ToTokens` that calls [`ToTokens::to_tokens`](quote::ToTokens::to_tokens) for each field.
 
 ```rust
@@ -147,6 +156,18 @@ pub use structmeta_derive::ToTokens;
 // #[include_doc = "../../doc/parse.md"]
 /**
 Derive [`syn::parse::Parse`] for syntax tree node.
+
+- [Example](#example)
+- [Helper attributes](#helper-attributes)
+  - [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-to_tokens)
+  - [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-to_tokens-1)
+  - [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-to_tokens-2)
+  - [`#[parse(peek)]`](#parsepeek)
+  - [`#[parse(any)]`](#parseany)
+  - [`#[parse(terminated)]`](#parseterminated)
+  - [`#[parse(dump)]`](#parsedump)
+
+# Example
 
 `#[derive(Parse)]` generates an implementation of `Parse` that calls [`Parse::parse`](syn::parse::Parse::parse) for each field.
 
@@ -433,6 +454,26 @@ pub use structmeta_derive::Parse;
 // #[include_doc = "../../doc/struct_meta.md"]
 /**
 Derive [`syn::parse::Parse`] for parsing attribute arguments.
+
+- [Example](#example)
+- [Named parameter](#named-parameter)
+  - [Supported field types for named parameter](#supported-field-types-for-named-parameter)
+  - [Flag style](#flag-style)
+  - [NameValue style](#namevalue-style)
+  - [NameArgs style](#nameargs-style)
+  - [NameArgs or Flag style](#nameargs-or-flag-style)
+  - [NameArgList style](#namearglist-style)
+  - [NameArgList or Flag style](#namearglist-or-flag-style)
+  - [Optional named parameter](#optional-named-parameter)
+  - [Rest named parameter](#rest-named-parameter)
+- [Unnamed parameter](#unnamed-parameter)
+  - [Required unnamed parameter](#required-unnamed-parameter)
+  - [Optional unnamed parameter](#optional-unnamed-parameter)
+  - [Variadic unnamed parameter](#variadic-unnamed-parameter)
+- [Parameter order](#parameter-order)
+- [Helper attribute `#[struct_meta(...)]`](#helper-attribute-struct_meta)
+- [Uses with `#[proc_macro_derive]`](#uses-with-proc_macro_derive)
+- [Uses with `#[proc_macro_attribute]`](#uses-with-proc_macro_attribute)
 
 # Example
 
@@ -804,18 +845,11 @@ The parameters must be in the following order.
 
 # Helper attribute `#[struct_meta(...)]`
 
-## Struct attribute arguments
-
-| argument | effect                                                                                   |
-| -------- | ---------------------------------------------------------------------------------------- |
-| dump     | Causes a compile error and outputs the automatically generated code as an error message. |
-
-## Field attribute arguments
-
-| argument     | effect                                             |
-| ------------ | -------------------------------------------------- |
-| name = "..." | Specify a parameter name.                          |
-| unnamed      | Make the field be treated as an unnamed parameter. |
+| argument       | struct | field | effect                                                                                   |
+| -------------- | ------ | ----- | ---------------------------------------------------------------------------------------- |
+| `dump`         | ✔      |       | Causes a compile error and outputs the automatically generated code as an error message. |
+| `name = "..."` |        | ✔     | Specify a parameter name.                                                                |
+| `unnamed`      |        | ✔     | Make the field be treated as an unnamed parameter.                                       |
 
 # Uses with `#[proc_macro_derive]`
 
