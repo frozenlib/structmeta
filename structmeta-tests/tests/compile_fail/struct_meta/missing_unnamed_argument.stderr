@@ -1,0 +1,7 @@
+error: expected `,`
+ --> $DIR/missing_unnamed_argument.rs:1:1
+  |
+1 | #[structmeta_tests::attr_requred_unnamed_param2(10)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)

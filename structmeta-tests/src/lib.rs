@@ -41,3 +41,18 @@ pub fn parse_single_variant(input: TokenStream) -> TokenStream {
     }
     .into()
 }
+
+#[derive(StructMeta)]
+struct RequredUnnamedParam2(LitInt, LitInt);
+
+#[proc_macro_attribute]
+pub fn attr_requred_unnamed_param2(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequredUnnamedParam2>(attr, item)
+}
+
+fn parse_attr<T: syn::parse::Parse>(attr: TokenStream, item: TokenStream) -> TokenStream {
+    match parse::<T>(attr) {
+        Ok(_) => item,
+        Err(e) => e.into_compile_error().into(),
+    }
+}
