@@ -116,13 +116,13 @@ impl<'a> Params<'a> {
         for (index, p) in self.unnamed_required.iter().enumerate() {
             if is_next {
                 let msg = format!(
-                    "this attribute takes least {} arguments but {} argument was supplied",
+                    "expected least {} arguments but {} argument was supplied",
                     self.unnamed_required.len(),
                     index,
                 );
                 ts.extend(quote! {
                     if input.is_empty () {
-                        return Err(input.error(#msg));
+                        return Err(::syn::Error::new(input.span(), #msg));
                     }
                     input.parse::<::syn::Token![,]>()?;
                 });
