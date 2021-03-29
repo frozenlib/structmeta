@@ -113,9 +113,19 @@ impl<'a> Params<'a> {
         let mut is_next = false;
         let mut ts = TokenStream::new();
         let mut ctor_args = vec![TokenStream::new(); self.fields.len()];
-        for p in &self.unnamed_required {
+        for (index, p) in self.unnamed_required.iter().enumerate() {
             if is_next {
-                ts.extend(quote!(input.parse::<::syn::Token![,]>()?;));
+                let msg = format!(
+                    "this attribute takes least {} arguments but {} argument was supplied",
+                    self.unnamed_required.len(),
+                    index,
+                );
+                ts.extend(quote! {
+                    if input.is_empty () {
+                        return Err(input.error(#msg));
+                    }
+                    input.parse::<::syn::Token![,]>()?;
+                });
             }
             is_next = true;
             ts.extend(p.info.build_let_parse());

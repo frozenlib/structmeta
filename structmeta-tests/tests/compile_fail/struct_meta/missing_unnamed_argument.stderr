@@ -1,4 +1,4 @@
-error: expected `,`
+error: unexpected end of input, this attribute takes least 2 arguments but 1 argument was supplied
  --> $DIR/missing_unnamed_argument.rs:1:1
   |
 1 | #[structmeta_tests::attr_requred_unnamed_param2(10)]
