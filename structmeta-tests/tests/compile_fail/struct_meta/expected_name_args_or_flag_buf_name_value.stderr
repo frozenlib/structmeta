@@ -1,4 +1,4 @@
-error: cannot find parameter `value` in this scope
+error: expected flag `value` or `value(...)`, found `value = ...`
  --> $DIR/expected_name_args_or_flag_buf_name_value.rs:1:53
   |
 1 | #[structmeta_tests::attr_required_name_args_or_flag(value = 10)]
