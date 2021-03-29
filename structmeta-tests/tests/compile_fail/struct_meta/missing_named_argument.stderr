@@ -1,4 +1,4 @@
-error: missing argument `value`
+error: missing argument `value = ...`
  --> $DIR/missing_named_argument.rs:1:1
   |
 1 | #[structmeta_tests::attr_required_name_value()]
