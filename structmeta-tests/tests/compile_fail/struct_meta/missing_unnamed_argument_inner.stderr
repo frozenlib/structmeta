@@ -1,5 +1,5 @@
 error: expected least 2 arguments but 1 argument was supplied
- --> $DIR/missing_unnamed_argument_inner.rs:1:60
+ --> $DIR/missing_unnamed_argument_inner.rs:1:61
   |
-1 | #[structmeta_tests::attr_requred_unnamed_param2_inner(value(10), after = 20)]
-  |                                                            ^^^^
+1 | #[structmeta_tests::attr_required_unnamed_param2_inner(value(10), after = 20)]
+  |                                                             ^^^^

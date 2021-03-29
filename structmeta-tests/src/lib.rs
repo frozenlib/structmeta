@@ -43,23 +43,23 @@ pub fn parse_single_variant(input: TokenStream) -> TokenStream {
 }
 
 #[derive(StructMeta)]
-struct RequredUnnamedParam2(LitInt, LitInt);
+struct RequiredUnnamedParam2(LitInt, LitInt);
 
 #[proc_macro_attribute]
-pub fn attr_requred_unnamed_param2(attr: TokenStream, item: TokenStream) -> TokenStream {
-    parse_attr::<RequredUnnamedParam2>(attr, item)
+pub fn attr_required_unnamed_param2(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredUnnamedParam2>(attr, item)
 }
 
 #[allow(dead_code)]
 #[derive(StructMeta)]
-struct RequredUnnamedParam2Inner {
-    value: NameArgs<RequredUnnamedParam2>,
+struct RequiredUnnamedParam2Inner {
+    value: NameArgs<RequiredUnnamedParam2>,
     after: LitInt,
 }
 
 #[proc_macro_attribute]
-pub fn attr_requred_unnamed_param2_inner(attr: TokenStream, item: TokenStream) -> TokenStream {
-    parse_attr::<RequredUnnamedParam2Inner>(attr, item)
+pub fn attr_required_unnamed_param2_inner(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredUnnamedParam2Inner>(attr, item)
 }
 
 fn parse_attr<T: syn::parse::Parse>(attr: TokenStream, item: TokenStream) -> TokenStream {
