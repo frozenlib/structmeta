@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use structmeta::{Parse, StructMeta};
+use structmeta::{NameArgs, Parse, StructMeta};
 use syn::{parse, parse2, parse_macro_input, DeriveInput, LitInt, LitStr};
 
 #[derive(StructMeta)]
@@ -48,6 +48,18 @@ struct RequredUnnamedParam2(LitInt, LitInt);
 #[proc_macro_attribute]
 pub fn attr_requred_unnamed_param2(attr: TokenStream, item: TokenStream) -> TokenStream {
     parse_attr::<RequredUnnamedParam2>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct RequredUnnamedParam2Inner {
+    value: NameArgs<RequredUnnamedParam2>,
+    after: LitInt,
+}
+
+#[proc_macro_attribute]
+pub fn attr_requred_unnamed_param2_inner(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequredUnnamedParam2Inner>(attr, item)
 }
 
 fn parse_attr<T: syn::parse::Parse>(attr: TokenStream, item: TokenStream) -> TokenStream {
