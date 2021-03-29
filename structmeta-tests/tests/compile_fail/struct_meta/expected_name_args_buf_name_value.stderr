@@ -1,5 +1,5 @@
-error[E0433]: failed to resolve: could not find `attr_name_args` in `structmeta_tests`
- --> $DIR/expected_name_args_buf_name_value.rs:1:21
+error: cannot find parameter `value` in this scope
+ --> $DIR/expected_name_args_buf_name_value.rs:1:45
   |
-1 | #[structmeta_tests::attr_name_args(value = 10)]
-  |                     ^^^^^^^^^^^^^^ could not find `attr_name_args` in `structmeta_tests`
+1 | #[structmeta_tests::attr_required_name_args(value = 10)]
+  |                                             ^^^^^
