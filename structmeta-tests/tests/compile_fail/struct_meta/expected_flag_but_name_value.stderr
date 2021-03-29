@@ -1,0 +1,5 @@
+error: cannot find parameter `value` in this scope
+ --> $DIR/expected_flag_but_name_value.rs:1:31
+  |
+1 | #[structmeta_tests::attr_flag(value = 10)]
+  |                               ^^^^^

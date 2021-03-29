@@ -1,0 +1,5 @@
+error: cannot find parameter `value_x` in this scope
+ --> $DIR/unexpected_named_argument.rs:1:46
+  |
+1 | #[structmeta_tests::attr_required_name_value(value_x = 10)]
+  |                                              ^^^^^^^

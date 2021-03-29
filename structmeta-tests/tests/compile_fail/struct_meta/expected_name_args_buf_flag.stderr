@@ -1,0 +1,5 @@
+error[E0433]: failed to resolve: could not find `attr_name_args` in `structmeta_tests`
+ --> $DIR/expected_name_args_buf_flag.rs:1:21
+  |
+1 | #[structmeta_tests::attr_name_args(value)]
+  |                     ^^^^^^^^^^^^^^ could not find `attr_name_args` in `structmeta_tests`

@@ -1,0 +1,5 @@
+error: expected ident
+ --> $DIR/too_many_unnamed_arguments.rs:1:52
+  |
+1 | #[structmeta_tests::attr_required_unnamed2(10, 20, 30)]
+  |                                                    ^^

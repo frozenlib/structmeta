@@ -1,0 +1,5 @@
+error: expected ident
+ --> $DIR/unexpected_unnamed_argument.rs:1:46
+  |
+1 | #[structmeta_tests::attr_optional_name_value(10)]
+  |                                              ^^

@@ -1,7 +1,7 @@
-error: expected least 2 arguments but 1 argument was supplied
- --> $DIR/missing_unnamed_argument.rs:1:1
+error: missing argument `value`
+ --> $DIR/missing_named_argument.rs:1:1
   |
-1 | #[structmeta_tests::attr_required_unnamed2(10)]
+1 | #[structmeta_tests::attr_required_name_value()]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
   = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)

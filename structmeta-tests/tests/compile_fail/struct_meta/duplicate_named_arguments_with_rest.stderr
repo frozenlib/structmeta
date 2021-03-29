@@ -1,0 +1,5 @@
+error[E0433]: failed to resolve: could not find `attr_required_and_rest_named_value` in `structmeta_tests`
+ --> $DIR/duplicate_named_arguments_with_rest.rs:1:21
+  |
+1 | #[structmeta_tests::attr_required_and_rest_named_value(value = 10, value = 10)]
+  |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ could not find `attr_required_and_rest_named_value` in `structmeta_tests`

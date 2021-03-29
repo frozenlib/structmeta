@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use proc_macro::TokenStream;
 use quote::quote;
-use structmeta::{NameArgs, Parse, StructMeta};
+use structmeta::{NameArgs, NameValue, Parse, StructMeta};
 use syn::{parse, parse2, parse_macro_input, DeriveInput, LitInt, LitStr};
 
 #[derive(StructMeta)]
@@ -43,23 +45,109 @@ pub fn parse_single_variant(input: TokenStream) -> TokenStream {
 }
 
 #[derive(StructMeta)]
-struct RequiredUnnamedParam2(LitInt, LitInt);
+struct RequiredUnnamed2(LitInt, LitInt);
 
 #[proc_macro_attribute]
-pub fn attr_required_unnamed_param2(attr: TokenStream, item: TokenStream) -> TokenStream {
-    parse_attr::<RequiredUnnamedParam2>(attr, item)
+pub fn attr_required_unnamed2(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredUnnamed2>(attr, item)
 }
 
 #[allow(dead_code)]
 #[derive(StructMeta)]
-struct RequiredUnnamedParam2Inner {
-    value: NameArgs<RequiredUnnamedParam2>,
+struct RequiredUnnamed2Inner {
+    value: NameArgs<RequiredUnnamed2>,
     after: LitInt,
 }
 
 #[proc_macro_attribute]
-pub fn attr_required_unnamed_param2_inner(attr: TokenStream, item: TokenStream) -> TokenStream {
-    parse_attr::<RequiredUnnamedParam2Inner>(attr, item)
+pub fn attr_required_unnamed2_inner(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredUnnamed2Inner>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct OptionalFlag {
+    value: bool,
+}
+
+#[proc_macro_attribute]
+pub fn attr_flag(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<OptionalFlag>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct RequiredNameValue {
+    value: NameValue<LitInt>,
+}
+
+#[proc_macro_attribute]
+pub fn attr_required_name_value(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredNameValue>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct OptionalNameValue {
+    value: Option<NameValue<LitInt>>,
+}
+#[proc_macro_attribute]
+pub fn attr_optional_name_value(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<OptionalNameValue>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct RestNameValue {
+    m: HashMap<String, NameValue<LitInt>>,
+}
+#[proc_macro_attribute]
+pub fn attr_rest_name_value(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RestNameValue>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct RequiredAndRestNameValue {
+    value: NameValue<LitInt>,
+    m: HashMap<String, NameValue<LitInt>>,
+}
+#[proc_macro_attribute]
+pub fn attr_required_and_rest_name_value(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredAndRestNameValue>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct RequiredNameArgs {
+    value: NameArgs<LitInt>,
+}
+
+#[proc_macro_attribute]
+pub fn attr_required_name_args(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredNameArgs>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct OptionalNameArgs {
+    value: Option<NameArgs<LitInt>>,
+}
+
+#[proc_macro_attribute]
+pub fn attr_optional_name_args(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<OptionalNameArgs>(attr, item)
+}
+
+#[allow(dead_code)]
+#[derive(StructMeta)]
+struct RequiredNameArgsOrFlag {
+    value: NameArgs<Option<LitInt>>,
+}
+
+#[proc_macro_attribute]
+pub fn attr_required_name_args_or_flag(attr: TokenStream, item: TokenStream) -> TokenStream {
+    parse_attr::<RequiredNameArgsOrFlag>(attr, item)
 }
 
 fn parse_attr<T: syn::parse::Parse>(attr: TokenStream, item: TokenStream) -> TokenStream {
