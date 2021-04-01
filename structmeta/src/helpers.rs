@@ -15,11 +15,11 @@ pub enum NameIndex {
 pub fn try_parse_name(
     input: ParseStream,
     flag_names: &[&str],
-    flag_map: bool,
+    flag_rest: bool,
     name_value_names: &[&str],
-    name_value_map: bool,
+    name_value_rest: bool,
     name_args_names: &[&str],
-    name_args_map: bool,
+    name_args_rest: bool,
     no_unnamed: bool,
 ) -> Result<Option<(NameIndex, Span)>> {
     let fork = input.fork();
@@ -27,20 +27,20 @@ pub fn try_parse_name(
         let span = ident.span();
         let mut kind = None;
         if fork.peek(Token![,]) || fork.is_empty() {
-            if let Some(i) = name_index_of(flag_names, flag_map, &ident) {
+            if let Some(i) = name_index_of(flag_names, flag_rest, &ident) {
                 input.advance_to(&fork);
                 return Ok(Some((NameIndex::Flag(i), span)));
             }
             kind = Some(ArgKind::Flag);
         } else if fork.peek(Token![=]) {
-            if let Some(i) = name_index_of(name_value_names, name_value_map, &ident) {
+            if let Some(i) = name_index_of(name_value_names, name_value_rest, &ident) {
                 fork.parse::<Token![=]>()?;
                 input.advance_to(&fork);
                 return Ok(Some((NameIndex::NameValue(i), span)));
             }
             kind = Some(ArgKind::NameValue);
         } else if fork.peek(token::Paren) {
-            if let Some(i) = name_index_of(name_args_names, name_args_map, &ident) {
+            if let Some(i) = name_index_of(name_args_names, name_args_rest, &ident) {
                 input.advance_to(&fork);
                 return Ok(Some((NameIndex::NameArgs(i), span)));
             }
@@ -49,13 +49,13 @@ pub fn try_parse_name(
 
         if kind.is_some() || no_unnamed {
             let mut expected = Vec::new();
-            if let Some(name) = name_of(flag_names, flag_map, &ident) {
+            if let Some(name) = name_of(flag_names, flag_rest, &ident) {
                 expected.push(format!("flag `{}`", name));
             }
-            if let Some(name) = name_of(name_value_names, name_value_map, &ident) {
+            if let Some(name) = name_of(name_value_names, name_value_rest, &ident) {
                 expected.push(format!("`{} = ...`", name));
             }
-            if let Some(name) = name_of(name_args_names, name_args_map, &ident) {
+            if let Some(name) = name_of(name_args_names, name_args_rest, &ident) {
                 expected.push(format!("`{}(...)`", name));
             }
             if !expected.is_empty() {
@@ -72,11 +72,11 @@ pub fn try_parse_name(
     }
     if no_unnamed {
         let message = if flag_names.is_empty()
-            && !flag_map
+            && !flag_rest
             && name_value_names.is_empty()
-            && !name_value_map
+            && !name_value_rest
             && name_args_names.is_empty()
-            && !name_args_map
+            && !name_args_rest
         {
             "too many arguments."
         } else {
