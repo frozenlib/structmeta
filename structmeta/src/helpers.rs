@@ -49,14 +49,14 @@ pub fn try_parse_name(
 
         if kind.is_some() || no_unnamed {
             let mut expected = Vec::new();
-            if let Some(i) = find(flag_names, &ident) {
-                expected.push(format!("flag `{}`", flag_names[i]));
+            if let Some(name) = name_of(flag_names, flag_map, &ident) {
+                expected.push(format!("flag `{}`", name));
             }
-            if let Some(i) = find(name_value_names, &ident) {
-                expected.push(format!("`{} = ...`", name_value_names[i]));
+            if let Some(name) = name_of(name_value_names, name_value_map, &ident) {
+                expected.push(format!("`{} = ...`", name));
             }
-            if let Some(i) = find(name_args_names, &ident) {
-                expected.push(format!("`{}(...)`", name_args_names[i]));
+            if let Some(name) = name_of(name_args_names, name_args_map, &ident) {
+                expected.push(format!("`{}(...)`", name));
             }
             if !expected.is_empty() {
                 return Err(input.error(msg(
@@ -95,6 +95,15 @@ fn name_index_of(
         Some(Ok(index))
     } else if map {
         Some(Err(ident.clone()))
+    } else {
+        None
+    }
+}
+fn name_of(names: &[&str], rest: bool, ident: &Ident) -> Option<String> {
+    if rest {
+        Some(ident.to_string())
+    } else if let Some(i) = find(names, ident) {
+        Some(names[i].to_string())
     } else {
         None
     }
