@@ -1,0 +1,5 @@
+error: cannot find parameter `value` in this scope
+ --> $DIR/expected_name_value_rest_but_name_args.rs:1:42
+  |
+1 | #[structmeta_tests::attr_rest_name_value(value(10))]
+  |                                          ^^^^^
