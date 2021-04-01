@@ -67,7 +67,20 @@ pub fn try_parse_name(
                     }),
                 )));
             }
-            return Err(input.error(format!("cannot find parameter `{}` in this scope", ident)));
+            let help = if let Some(similar_name) =
+                find_similar_name(&[flag_names, name_value_names, name_args_names], &ident)
+            {
+                format!(
+                    " (help: a parameter with a similar name exists: `{}`)",
+                    similar_name
+                )
+            } else {
+                "".into()
+            };
+            return Err(input.error(format!(
+                "cannot find parameter `{}` in this scope{}",
+                ident, help
+            )));
         }
     }
     if no_unnamed {
@@ -138,6 +151,80 @@ fn msg(expected: &[String], found: Option<Arg>) -> String {
     }
     m
 }
+fn find_similar_name<'a>(names: &[&[&'a str]], ident: &Ident) -> Option<&'a str> {
+    let c0: Vec<_> = ident.to_string().chars().collect();
+    let mut c1 = Vec::new();
+    let mut r = None;
+    let mut r_d = usize::max_value();
+    for i0 in 0..names.len() {
+        for i1 in 0..names[i0].len() {
+            let name = names[i0][i1];
+            c1.clear();
+            c1.extend(name.chars());
+            if let Some(d) = distance(&c0, &c1) {
+                if d < r_d {
+                    r_d = d;
+                    r = Some(name);
+                }
+                if d == r_d && Some(name) != r {
+                    return None;
+                }
+            }
+        }
+    }
+    r
+}
+
+fn distance(s0: &[char], s1: &[char]) -> Option<usize> {
+    if s0.len() > s1.len() {
+        return distance(s1, s0);
+    }
+    if s0.len() + 1 < s1.len() {
+        return None;
+    }
+    let mut start = 0;
+    while start < s0.len() && start < s1.len() && s0[start] == s1[start] {
+        start += 1;
+    }
+    let mut end = 0;
+    while start + end < s0.len()
+        && start + end < s1.len()
+        && s0[s0.len() - end - 1] == s1[s1.len() - end - 1]
+    {
+        end += 1;
+    }
+    if s0.len() == s1.len() {
+        if start + end == s0.len() {
+            return Some(0);
+        }
+        if start + end + 1 == s0.len() {
+            return Some(1);
+        }
+        if start + end + 2 == s0.len() && s0[start] == s1[start + 1] && s0[start + 1] == s1[start] {
+            return Some(2);
+        }
+    } else {
+        if start + end == s0.len() {
+            return Some(1);
+        }
+    }
+    None
+}
+#[test]
+fn test_is_near() {
+    fn check(s0: &str, s1: &str, e: Option<usize>) {
+        let c0: Vec<_> = s0.chars().collect();
+        let c1: Vec<_> = s1.chars().collect();
+        assert_eq!(distance(&c0, &c1), e, "{} , {}", s0, s1)
+    }
+    check("a", "a", Some(0));
+    check("a", "b", Some(1));
+    check("a", "ab", Some(1));
+    check("ab", "a", Some(1));
+    check("a", "aa", Some(1));
+    check("ab", "ba", Some(2));
+}
+
 enum ArgKind {
     Flag,
     NameValue,

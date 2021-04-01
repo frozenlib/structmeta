@@ -1,4 +1,4 @@
-error: cannot find parameter `vaue` in this scope
+error: cannot find parameter `vaue` in this scope (help: a parameter with a similar name exists: `value`)
  --> $DIR/similar_name.rs:1:46
   |
 1 | #[structmeta_tests::attr_required_name_value(vaue = 10)]
