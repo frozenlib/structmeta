@@ -88,12 +88,12 @@ pub fn try_parse_name(
 }
 fn name_index_of(
     names: &[&str],
-    map: bool,
+    rest: bool,
     ident: &Ident,
 ) -> Option<std::result::Result<usize, Ident>> {
     if let Some(index) = find(names, ident) {
         Some(Ok(index))
-    } else if map {
+    } else if rest {
         Some(Err(ident.clone()))
     } else {
         None

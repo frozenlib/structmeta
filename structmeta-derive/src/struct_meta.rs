@@ -53,7 +53,7 @@ struct Params<'a> {
     unnamed_optional: Vec<UnnamedParam<'a>>,
     unnamed_variadic: Option<UnnamedParam<'a>>,
     named: HashMap<String, NamedParam<'a>>,
-    map: Option<MapParam<'a>>,
+    rest: Option<RestParam<'a>>,
 }
 impl<'a> Params<'a> {
     fn from_fields(fields: &'a Fields) -> Result<Self> {
@@ -61,7 +61,7 @@ impl<'a> Params<'a> {
         let mut unnamed_optional = Vec::new();
         let mut unnamed_variadic = None;
         let mut named = HashMap::new();
-        let mut map = None;
+        let mut rest = None;
         for (index, field) in fields.iter().enumerate() {
             let span = field.span();
             match Param::from_field(index, field)? {
@@ -92,11 +92,11 @@ impl<'a> Params<'a> {
                     }
                     named.insert(p.name.clone(), p);
                 }
-                Param::Map(p) => {
-                    if map.is_some() {
-                        bail!(span, "cannot use map parameter twice.")
+                Param::Rest(p) => {
+                    if rest.is_some() {
+                        bail!(span, "cannot use rest parameter twice.")
                     }
-                    map = Some(p);
+                    rest = Some(p);
                 }
             }
         }
@@ -106,7 +106,7 @@ impl<'a> Params<'a> {
             unnamed_optional,
             unnamed_variadic,
             named,
-            map,
+            rest,
         })
     }
     fn build(&self) -> TokenStream {
@@ -151,9 +151,9 @@ impl<'a> Params<'a> {
             ts.extend(p.build_let());
             p.build_ctor_arg(&mut ctor_args);
         }
-        let (flag_ps, flag_map) = self.named_ps(|p| p.is_flag());
-        let (name_value_ps, name_value_map) = self.named_ps(|p| p.is_name_value());
-        let (name_args_ps, name_args_map) = self.named_ps(|p| p.is_name_args());
+        let (flag_ps, flag_rest) = self.named_ps(|p| p.is_flag());
+        let (name_value_ps, name_value_rest) = self.named_ps(|p| p.is_name_value());
+        let (name_args_ps, name_args_rest) = self.named_ps(|p| p.is_name_args());
 
         let mut arms_named = Vec::new();
         for (index, p) in flag_ps.iter().enumerate() {
@@ -165,16 +165,16 @@ impl<'a> Params<'a> {
         for (index, p) in name_args_ps.iter().enumerate() {
             arms_named.push(p.build_arm_parse(index, ArgKind::NameArgs));
         }
-        if let Some(p) = &self.map {
+        if let Some(p) = &self.rest {
             ts.extend(p.build_let());
             p.build_ctor_arg(&mut ctor_args);
-            if flag_map {
+            if flag_rest {
                 arms_named.push(p.build_arm_parse(ArgKind::Flag));
             }
-            if name_value_map {
+            if name_value_rest {
                 arms_named.push(p.build_arm_parse(ArgKind::NameValue));
             }
-            if name_args_map {
+            if name_args_rest {
                 arms_named.push(p.build_arm_parse(ArgKind::NameArgs));
             }
         }
@@ -227,11 +227,11 @@ impl<'a> Params<'a> {
                 is_next = true;
                 if let Some((index, span)) = ::structmeta::helpers::try_parse_name(input,
                     &[#(#flag_names,)*],
-                    #flag_map,
+                    #flag_rest,
                     &[#(#name_value_names,)*],
-                    #name_value_map,
+                    #name_value_rest,
                     &[#(#name_args_names,)*],
-                    #name_args_map,
+                    #name_args_rest,
                     #no_unnamed)?
                 {
                     named_used = true;
@@ -252,7 +252,7 @@ impl<'a> Params<'a> {
     fn named_ps(&self, f: impl Fn(&NamedParamType<'a>) -> bool) -> (Vec<&NamedParam<'a>>, bool) {
         (
             self.named.values().filter(|p| f(&p.ty)).collect(),
-            if let Some(p) = &self.map {
+            if let Some(p) = &self.rest {
                 f(&p.ty)
             } else {
                 false
@@ -264,7 +264,7 @@ impl<'a> Params<'a> {
 enum Param<'a> {
     Unnamed(UnnamedParam<'a>),
     Named(NamedParam<'a>),
-    Map(MapParam<'a>),
+    Rest(RestParam<'a>),
 }
 
 impl<'a> Param<'a> {
@@ -310,7 +310,7 @@ impl<'a> Param<'a> {
         let info = ParamInfo::new(index, field, ty);
         let ty = NamedParamType::from_type(ty);
         let this = if is_map {
-            Param::Map(MapParam { info, ty })
+            Param::Rest(RestParam { info, ty })
         } else if let Some((name, name_span)) = name {
             Param::Named(NamedParam {
                 info,
@@ -372,7 +372,7 @@ impl<'a> ParamInfo<'a> {
     }
 }
 
-struct MapParam<'a> {
+struct RestParam<'a> {
     info: ParamInfo<'a>,
     ty: NamedParamType<'a>,
 }
@@ -434,7 +434,7 @@ impl<'a> NamedParam<'a> {
         build_ctor_arg(&self.info, value, ctor_args)
     }
 }
-impl<'a> MapParam<'a> {
+impl<'a> RestParam<'a> {
     fn build_let(&self) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         quote!(let mut #temp_ident = ::std::collections::HashMap::new();)
