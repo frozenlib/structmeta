@@ -1,0 +1,5 @@
+error[E0277]: the trait bound `structmeta::Flag: Parse` is not satisfied
+ --> $DIR/hash_map_flag.rs:6:5
+  |
+6 |     rest: HashMap<String, Flag>,
+  |     ^^^^ the trait `Parse` is not implemented for `structmeta::Flag`

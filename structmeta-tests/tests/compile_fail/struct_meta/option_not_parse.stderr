@@ -1,0 +1,5 @@
+error[E0277]: the trait bound `NotParse: Parse` is not satisfied
+ --> $DIR/option_not_parse.rs:3:5
+  |
+3 |     not_parse: Option<NotParse>,
+  |     ^^^^^^^^^ the trait `Parse` is not implemented for `NotParse`
