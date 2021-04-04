@@ -597,7 +597,7 @@ impl<'a> NamedParamType<'a> {
         } else if let Some(ty) = get_name_value_element(ty) {
             Self::NameValue { ty }
         } else if let Some(mut ty) = get_name_args_element(ty) {
-            let mut is_option = false;
+            let mut is_option = false;            
             if let Some(e) = get_option_element(ty) {
                 is_option = true;
                 ty = e;
