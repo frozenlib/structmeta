@@ -654,7 +654,7 @@ impl<'a> NamedParamType<'a> {
             NamedParamType::Bool | NamedParamType::Flag => quote!(span),
             NamedParamType::Value { ty, is_vec } => {
                 if *is_vec {
-                    build_parse_expr_name_args(ty, *is_vec)
+                    build_parse_expr_name_args(ty, *is_vec, span)
                 } else {
                     build_parse_expr(ty, span)
                 }
@@ -670,7 +670,7 @@ impl<'a> NamedParamType<'a> {
                 let args = if kind == ArgKind::Flag && *is_option {
                     quote!(None)
                 } else {
-                    let args = build_parse_expr_name_args(ty, *is_vec);
+                    let args = build_parse_expr_name_args(ty, *is_vec, span);
                     if *is_option {
                         quote!(Some(#args))
                     } else {
@@ -686,11 +686,11 @@ impl<'a> NamedParamType<'a> {
 fn build_parse_expr(ty: &Type, span: Span) -> TokenStream {
     quote_spanned!(span=> input.parse::<#ty>()?)
 }
-fn build_parse_expr_name_args(ty: &Type, is_vec: bool) -> TokenStream {
+fn build_parse_expr_name_args(ty: &Type, is_vec: bool, span: Span) -> TokenStream {
     let value = if is_vec {
-        quote!(::syn::punctuated::Punctuated::<#ty, ::syn::Token![,]>::parse_terminated(&content)?.into_iter().collect())
+        quote_spanned!(span=> ::syn::punctuated::Punctuated::<#ty, ::syn::Token![,]>::parse_terminated(&content)?.into_iter().collect())
     } else {
-        quote!(content.parse::<#ty>()?)
+        quote_spanned!(span=> content.parse::<#ty>()?)
     };
     quote! {
         {
