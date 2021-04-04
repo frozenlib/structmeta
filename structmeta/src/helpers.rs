@@ -156,9 +156,8 @@ fn find_similar_name<'a>(names: &[&[&'a str]], ident: &Ident) -> Option<&'a str>
     let mut c1 = Vec::new();
     let mut r = None;
     let mut r_d = usize::max_value();
-    for i0 in 0..names.len() {
-        for i1 in 0..names[i0].len() {
-            let name = names[i0][i1];
+    for &names in names {
+        for &name in names {
             c1.clear();
             c1.extend(name.chars());
             if let Some(d) = distance(&c0, &c1) {
@@ -203,11 +202,10 @@ fn distance(s0: &[char], s1: &[char]) -> Option<usize> {
         if start + end + 2 == s0.len() && s0[start] == s1[start + 1] && s0[start + 1] == s1[start] {
             return Some(2);
         }
-    } else {
-        if start + end == s0.len() {
-            return Some(1);
-        }
+    } else if start + end == s0.len() {
+        return Some(1);
     }
+
     None
 }
 #[test]
