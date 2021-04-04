@@ -1,9 +1,7 @@
-error[E0308]: mismatched types
+error[E0277]: the trait bound `bool: Parse` is not satisfied
  --> $DIR/option_bool.rs:1:10
   |
 1 | #[derive(structmeta::StructMeta)]
-  |          ^^^^^^^^^^^^^^^^^^^^^^ expected `bool`, found struct `Span`
+  |          ^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `bool`
   |
-  = note: expected enum `Option<bool>`
-             found enum `Option<Span>`
   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

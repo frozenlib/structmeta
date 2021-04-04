@@ -308,7 +308,7 @@ impl<'a> Param<'a> {
         };
 
         let info = ParamInfo::new(index, field, ty);
-        let ty = NamedParamType::from_type(ty);
+        let ty = NamedParamType::from_type(ty, !is_map && !is_option);
         let this = if is_map {
             Param::Rest(RestParam { info, ty })
         } else if let Some((name, name_span)) = name {
@@ -589,15 +589,15 @@ enum NamedParamType<'a> {
 }
 
 impl<'a> NamedParamType<'a> {
-    fn from_type(ty: &'a Type) -> Self {
-        if is_bool(ty) {
+    fn from_type(ty: &'a Type, may_flag: bool) -> Self {
+        if may_flag && is_bool(ty) {
             Self::Bool
-        } else if is_flag(ty) {
+        } else if may_flag && is_flag(ty) {
             Self::Flag
         } else if let Some(ty) = get_name_value_element(ty) {
             Self::NameValue { ty }
         } else if let Some(mut ty) = get_name_args_element(ty) {
-            let mut is_option = false;            
+            let mut is_option = false;
             if let Some(e) = get_option_element(ty) {
                 is_option = true;
                 ty = e;

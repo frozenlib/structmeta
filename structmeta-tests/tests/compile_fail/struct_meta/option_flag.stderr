@@ -1,9 +1,7 @@
-error[E0308]: mismatched types
+error[E0277]: the trait bound `structmeta::Flag: Parse` is not satisfied
  --> $DIR/option_flag.rs:3:10
   |
 3 | #[derive(structmeta::StructMeta)]
-  |          ^^^^^^^^^^^^^^^^^^^^^^ expected struct `structmeta::Flag`, found struct `Span`
+  |          ^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
   |
-  = note: expected enum `Option<structmeta::Flag>`
-             found enum `Option<Span>`
   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
