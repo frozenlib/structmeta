@@ -1,7 +1,5 @@
 error[E0277]: the trait bound `HashMap<String, LitInt>: Parse` is not satisfied
- --> $DIR/option_hash_map.rs:4:10
+ --> $DIR/option_hash_map.rs:6:5
   |
-4 | #[derive(structmeta::StructMeta)]
-  |          ^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `HashMap<String, LitInt>`
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+6 |     rest: Option<HashMap<String, LitInt>>,
+  |     ^^^^ the trait `Parse` is not implemented for `HashMap<String, LitInt>`

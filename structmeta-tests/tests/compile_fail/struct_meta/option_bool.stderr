@@ -1,7 +1,5 @@
 error[E0277]: the trait bound `bool: Parse` is not satisfied
- --> $DIR/option_bool.rs:1:10
+ --> $DIR/option_bool.rs:3:5
   |
-1 | #[derive(structmeta::StructMeta)]
-  |          ^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `bool`
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+3 |     flag: Option<bool>,
+  |     ^^^^ the trait `Parse` is not implemented for `bool`

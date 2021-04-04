@@ -399,9 +399,10 @@ impl<'a> NamedParam<'a> {
     fn build_arm_parse(&self, index: usize, kind: ArgKind) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         let msg = format!("parameter `{}` speficied more than once", self.name);
-        let expr = self.ty.build_parse_expr(kind);
+        let span = self.info.field.span();
+        let expr = self.ty.build_parse_expr(kind, span);
         let var = kind.to_helper_name_index_variant();
-        quote_spanned! { self.info.field.span()=>
+        quote_spanned! { span=>
             ::structmeta::helpers::NameIndex::#var(Ok(#index)) => {
                 if #temp_ident.is_some() {
                     return Err(::syn::Error::new(span, #msg));
@@ -441,9 +442,10 @@ impl<'a> RestParam<'a> {
     }
     fn build_arm_parse(&self, kind: ArgKind) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
-        let expr = self.ty.build_parse_expr(kind);
+        let span = self.info.field.span();
+        let expr = self.ty.build_parse_expr(kind, span);
         let var = kind.to_helper_name_index_variant();
-        quote_spanned! { self.info.field.span()=>
+        quote_spanned! { span=>
             ::structmeta::helpers::NameIndex::#var(Err(name)) => {
                 if #temp_ident.insert(name.to_string(), #expr).is_some() {
                     return Err(::syn::Error::new(span, format!("parameter `{}` speficied more than once", name)));
@@ -459,8 +461,9 @@ impl<'a> RestParam<'a> {
 impl<'a> UnnamedParam<'a> {
     fn build_arm_parse_value(&self, index: usize) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
-        let expr = build_parse_expr(&self.ty);
-        quote_spanned! { self.info.field.span()=>
+        let span = self.info.field.span();
+        let expr = build_parse_expr(&self.ty, span);
+        quote_spanned! { span=>
             #index => {
                 #temp_ident = Some(#expr);
             }
@@ -468,7 +471,8 @@ impl<'a> UnnamedParam<'a> {
     }
     fn build_arm_parse_vec_item(&self) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
-        let expr = build_parse_expr(&self.ty);
+        let span = self.info.field.span();
+        let expr = build_parse_expr(&self.ty, span);
         quote_spanned! { self.info.field.span()=>
             _ => {
                 #temp_ident.push(#expr);
@@ -645,14 +649,14 @@ impl<'a> NamedParamType<'a> {
             NamedParamType::NameArgs { .. } => true,
         }
     }
-    fn build_parse_expr(&self, kind: ArgKind) -> TokenStream {
+    fn build_parse_expr(&self, kind: ArgKind, span: Span) -> TokenStream {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => quote!(span),
             NamedParamType::Value { ty, is_vec } => {
                 if *is_vec {
                     build_parse_expr_name_args(ty, *is_vec)
                 } else {
-                    build_parse_expr(ty)
+                    build_parse_expr(ty, span)
                 }
             }
             NamedParamType::NameValue { ty } => {
@@ -679,8 +683,8 @@ impl<'a> NamedParamType<'a> {
     }
 }
 
-fn build_parse_expr(ty: &Type) -> TokenStream {
-    quote!(input.parse::<#ty>()?)
+fn build_parse_expr(ty: &Type, span: Span) -> TokenStream {
+    quote_spanned!(span=> input.parse::<#ty>()?)
 }
 fn build_parse_expr_name_args(ty: &Type, is_vec: bool) -> TokenStream {
     let value = if is_vec {

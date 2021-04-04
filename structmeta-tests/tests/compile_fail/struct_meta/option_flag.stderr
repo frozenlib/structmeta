@@ -1,7 +1,5 @@
 error[E0277]: the trait bound `structmeta::Flag: Parse` is not satisfied
- --> $DIR/option_flag.rs:3:10
+ --> $DIR/option_flag.rs:5:5
   |
-3 | #[derive(structmeta::StructMeta)]
-  |          ^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+5 |     flag: Option<Flag>,
+  |     ^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
