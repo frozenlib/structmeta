@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use std::{collections::HashMap, fmt::Debug, iter::FromIterator};
 use structmeta::*;
-use syn::{parse::Parse, parse_quote, Attribute, LitInt, LitStr};
+use syn::{parse::Parse, parse_quote, Attribute, Expr, LitInt, LitStr};
 
 macro_rules! pq {
     ($($tt:tt)*) =>  { parse_quote!($($tt)*) }
@@ -373,6 +373,23 @@ fn test_struct_map() {
             m: HashMap::from_iter(vec![("abc".into(), pq!("xyz")), ("def".into(), pq!("123"))]),
         },
         "args 2",
+    );
+}
+
+#[test]
+fn test_expr_or_name_value() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Option<Expr>,
+        x: Option<NameValue<LitInt>>,
+    }
+    check(
+        pq!(#[attr(func(1))]),
+        Attr {
+            expr: Some(pq!(func(1))),
+            x: None,
+        },
     );
 }
 

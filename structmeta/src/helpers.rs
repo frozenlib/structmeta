@@ -22,24 +22,27 @@ pub fn try_parse_name(
     name_args_rest: bool,
     no_unnamed: bool,
 ) -> Result<Option<(NameIndex, Span)>> {
+    let may_flag = !flag_names.is_empty() || flag_rest;
+    let may_name_value = !name_value_names.is_empty() || name_value_rest;
+    let may_name_args = !name_args_names.is_empty() || name_args_rest;
     let fork = input.fork();
     if let Ok(ident) = Ident::parse_any(&fork) {
         let span = ident.span();
         let mut kind = None;
-        if fork.peek(Token![,]) || fork.is_empty() {
+        if (no_unnamed || may_flag) && (fork.peek(Token![,]) || fork.is_empty()) {
             if let Some(i) = name_index_of(flag_names, flag_rest, &ident) {
                 input.advance_to(&fork);
                 return Ok(Some((NameIndex::Flag(i), span)));
             }
             kind = Some(ArgKind::Flag);
-        } else if fork.peek(Token![=]) {
+        } else if (no_unnamed || may_name_value) && fork.peek(Token![=]) {
             if let Some(i) = name_index_of(name_value_names, name_value_rest, &ident) {
                 fork.parse::<Token![=]>()?;
                 input.advance_to(&fork);
                 return Ok(Some((NameIndex::NameValue(i), span)));
             }
             kind = Some(ArgKind::NameValue);
-        } else if fork.peek(token::Paren) {
+        } else if (no_unnamed || may_name_args) && fork.peek(token::Paren) {
             if let Some(i) = name_index_of(name_args_names, name_args_rest, &ident) {
                 input.advance_to(&fork);
                 return Ok(Some((NameIndex::NameArgs(i), span)));
@@ -84,16 +87,10 @@ pub fn try_parse_name(
         }
     }
     if no_unnamed {
-        let message = if flag_names.is_empty()
-            && !flag_rest
-            && name_value_names.is_empty()
-            && !name_value_rest
-            && name_args_names.is_empty()
-            && !name_args_rest
-        {
-            "too many arguments."
-        } else {
+        let message = if may_flag || may_name_value || may_name_args {
             "too many unnamed arguments."
+        } else {
+            "too many arguments."
         };
         return Err(input.error(message));
     }
