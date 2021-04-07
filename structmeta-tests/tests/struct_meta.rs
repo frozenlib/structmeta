@@ -393,6 +393,69 @@ fn test_expr_or_name_value() {
     );
 }
 
+#[test]
+fn test_expr_or_name_value_similar_1() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Option<Expr>,
+        x: Option<NameValue<LitInt>>,
+    }
+    check(
+        pq!(#[attr(x == y)]),
+        Attr {
+            expr: Some(pq!(x == y)),
+            x: None,
+        },
+    );
+}
+#[test]
+fn test_expr_or_name_value_similar_2() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Option<Expr>,
+        x: Option<NameValue<LitInt>>,
+    }
+    check(
+        pq!(#[attr(x = 1)]),
+        Attr {
+            expr: None,
+            x: Some(name_value(pq!(1))),
+        },
+    );
+}
+
+#[test]
+fn test_expr_or_name_args_similar() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Option<Expr>,
+        x: Option<NameArgs<LitInt>>,
+    }
+    check(
+        pq!(#[attr(x(1))]),
+        Attr {
+            expr: None,
+            x: Some(name_args(pq!(1))),
+        },
+    );
+}
+
+fn name_value<T>(value: T) -> NameValue<T> {
+    NameValue {
+        value,
+        name_span: Span::call_site(),
+    }
+}
+fn name_args<T>(args: T) -> NameArgs<T> {
+    NameArgs {
+        args,
+        name_span: Span::call_site(),
+    }
+}
+
 #[track_caller]
 fn check<T: Parse + PartialEq + Debug>(input: Attribute, expected: T) {
     check_msg(input, expected, "")
