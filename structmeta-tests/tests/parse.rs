@@ -27,6 +27,7 @@ fn for_struct() {
 
 #[test]
 fn for_enum() {
+    #[allow(clippy::large_enum_variant)]
     #[derive(ToTokens, Parse)]
     enum TestEnum {
         A(Token![=], LitInt, LitInt),

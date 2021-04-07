@@ -154,6 +154,8 @@
       "args": [
         "clippy",
         "--all-features",
+        "--tests",
+        "--lib",
         "--target-dir",
         "target/clippy",
         "--",
