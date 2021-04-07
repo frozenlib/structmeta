@@ -1,4 +1,4 @@
-use proc_macro2::{Ident, Span};
+use proc_macro2::{Ident, Spacing, Span};
 use syn::{
     ext::IdentExt,
     parse::{discouraged::Speculative, ParseStream},
@@ -35,11 +35,7 @@ pub fn try_parse_name(
                 return Ok(Some((NameIndex::Flag(i), span)));
             }
             kind = Some(ArgKind::Flag);
-        } else if (no_unnamed || may_name_value)
-            && fork.peek(Token![=])
-            && !fork.peek(Token![==])
-            && !fork.peek(Token![=>])
-        {
+        } else if (no_unnamed || may_name_value) && peek_eq_op(&fork) {
             if let Some(i) = name_index_of(name_value_names, name_value_rest, &ident) {
                 fork.parse::<Token![=]>()?;
                 input.advance_to(&fork);
@@ -99,6 +95,13 @@ pub fn try_parse_name(
         return Err(input.error(message));
     }
     Ok(None)
+}
+fn peek_eq_op(input: ParseStream) -> bool {
+    if let Some((p, _)) = input.cursor().punct() {
+        p.as_char() == '=' && p.spacing() == Spacing::Alone
+    } else {
+        false
+    }
 }
 fn name_index_of(
     names: &[&str],
