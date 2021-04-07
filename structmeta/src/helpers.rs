@@ -35,7 +35,11 @@ pub fn try_parse_name(
                 return Ok(Some((NameIndex::Flag(i), span)));
             }
             kind = Some(ArgKind::Flag);
-        } else if (no_unnamed || may_name_value) && fork.peek(Token![=]) {
+        } else if (no_unnamed || may_name_value)
+            && fork.peek(Token![=])
+            && !fork.peek(Token![==])
+            && !fork.peek(Token![=>])
+        {
             if let Some(i) = name_index_of(name_value_names, name_value_rest, &ident) {
                 fork.parse::<Token![=]>()?;
                 input.advance_to(&fork);
