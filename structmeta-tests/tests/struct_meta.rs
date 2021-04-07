@@ -442,6 +442,42 @@ fn test_expr_or_name_args_similar() {
         },
     );
 }
+#[test]
+fn test_unnamed_similar_name_value() {
+    use syn::parse_quote;
+    use syn::Expr;
+
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr(Option<Expr>);
+    check(pq!(#[attr(a = 10)]), Attr(Some(pq!(a = 10))));
+}
+
+// #[test]
+// fn anb() {
+//     #[derive(StructMeta)]
+//     struct WithoutNamed {
+//         #[struct_meta(unnamed)]
+//         unnamed: Option<Expr>,
+//     }
+//     #[derive(StructMeta)]
+//     struct WithNamed {
+//         #[struct_meta(unnamed)]
+//         unnamed: Option<Expr>,
+//         x: Option<LitInt>,
+//     }
+
+//     let attr_x: Attribute = parse_quote!(#[attr(x = 10)]);
+//     let attr_y: Attribute = parse_quote!(#[attr(y = 10)]);
+//     let result: WithoutNamed = attr_x.parse_args().unwrap();
+//     assert_eq!(result.unnamed.is_some(), true);
+
+//     let result: WithNamed = attr_x.parse_args().unwrap();
+//     assert_eq!(result.unnamed.is_some(), false);
+//     assert_eq!(result.x.is_some(), true);
+
+//     let result: syn::Result<WithNamed> = attr_y.parse_args();
+//     assert!(result.is_err());
+// }
 
 fn name_value<T>(value: T) -> NameValue<T> {
     NameValue {

@@ -472,6 +472,7 @@ pub use structmeta_derive::Parse;
 /// - [Helper attribute `#[struct_meta(...)]`](#helper-attribute-struct_meta)
 /// - [Uses with `#[proc_macro_derive]`](#uses-with-proc_macro_derive)
 /// - [Uses with `#[proc_macro_attribute]`](#uses-with-proc_macro_attribute)
+/// - [Parsing ambiguous arguments](#parsing-ambiguous-arguments)
 /// 
 /// # Example
 /// 
@@ -930,6 +931,43 @@ pub use structmeta_derive::Parse;
 /// 
 /// assert_eq!(MSG, "xyz");
 /// ```
+/// 
+/// # Parsing ambiguous arguments
+/// 
+/// If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style.  
+/// If `name = value` style parameter is not defined, it will be parsed as unnamed parameter.
+/// 
+/// ```rust
+/// use structmeta::StructMeta;
+/// use syn::{parse_quote, Attribute, Expr, LitInt, Result};
+/// 
+/// #[derive(StructMeta)]
+/// struct WithoutNamed {
+///     #[struct_meta(unnamed)]
+///     unnamed: Option<Expr>,
+/// }
+/// #[derive(StructMeta)]
+/// struct WithNamed {
+///     #[struct_meta(unnamed)]
+///     unnamed: Option<Expr>,
+///     x: Option<LitInt>,
+/// }
+/// 
+/// let attr_x: Attribute = parse_quote!(#[attr(x = 10)]);
+/// let attr_y: Attribute = parse_quote!(#[attr(y = 10)]);
+/// let result: WithoutNamed = attr_x.parse_args().unwrap();
+/// assert_eq!(result.unnamed.is_some(), true);
+/// 
+/// let result: WithNamed = attr_x.parse_args().unwrap();
+/// assert_eq!(result.unnamed.is_some(), false);
+/// assert_eq!(result.x.is_some(), true);
+/// 
+/// let result: Result<WithNamed> = attr_y.parse_args();
+/// assert!(result.is_err());
+/// ```
+/// 
+/// Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.  
+/// If `name(args)` style parameter is not defined, it will be parsed as unnamed parameter.
 
 // #[include_doc("../../doc/struct_meta.md", end)]
 pub use structmeta_derive::StructMeta;
