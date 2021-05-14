@@ -119,10 +119,8 @@ fn name_index_of(
 fn name_of(names: &[&str], rest: bool, ident: &Ident) -> Option<String> {
     if rest {
         Some(ident.to_string())
-    } else if let Some(i) = find(names, ident) {
-        Some(names[i].to_string())
     } else {
-        None
+        find(names, ident).map(|i| names[i].to_string())
     }
 }
 fn find(names: &[&str], ident: &Ident) -> Option<usize> {

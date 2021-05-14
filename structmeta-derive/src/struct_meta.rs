@@ -323,8 +323,8 @@ impl<'a> Param<'a> {
             Param::Unnamed(UnnamedParam {
                 info,
                 ty,
-                is_vec,
                 is_option,
+                is_vec,
             })
         } else {
             bail!(
@@ -379,8 +379,8 @@ struct RestParam<'a> {
 
 struct NamedParam<'a> {
     info: ParamInfo<'a>,
-    name_span: Span,
     name: String,
+    name_span: Span,
     ty: NamedParamType<'a>,
     is_option: bool,
 }

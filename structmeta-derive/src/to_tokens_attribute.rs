@@ -27,7 +27,7 @@ impl Parse for ToTokensAttribute {
                 }
             }
         }
-        Ok(Self { token, dump })
+        Ok(Self { dump, token })
     }
 }
 
