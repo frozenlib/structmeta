@@ -708,7 +708,7 @@ enum ArgKind {
     NameArgs,
 }
 impl ArgKind {
-    fn to_helper_name_index_variant(&self) -> TokenStream {
+    fn to_helper_name_index_variant(self) -> TokenStream {
         match self {
             Self::Flag => quote!(Flag),
             Self::NameValue => quote!(NameValue),
