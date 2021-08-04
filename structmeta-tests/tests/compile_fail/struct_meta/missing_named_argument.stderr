@@ -4,4 +4,4 @@ error: missing argument `value = ...`
 1 | #[structmeta_tests::attr_required_name_value()]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
-  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the attribute macro `structmeta_tests::attr_required_name_value` (in Nightly builds, run with -Z macro-backtrace for more info)

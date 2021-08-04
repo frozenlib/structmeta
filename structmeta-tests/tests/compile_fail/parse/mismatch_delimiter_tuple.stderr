@@ -6,4 +6,4 @@ error[E0308]: mismatched types
 4 | struct TestType(#[to_tokens("(")] syn::token::Bracket, LitStr);
   |                                   ------------------- expected due to this
   |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the derive macro `Parse` (in Nightly builds, run with -Z macro-backtrace for more info)

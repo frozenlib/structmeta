@@ -4,4 +4,4 @@ error: expected least 2 arguments but 1 argument was supplied
 1 | #[structmeta_tests::attr_required_unnamed2(10)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
-  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the attribute macro `structmeta_tests::attr_required_unnamed2` (in Nightly builds, run with -Z macro-backtrace for more info)
