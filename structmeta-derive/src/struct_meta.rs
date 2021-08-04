@@ -462,7 +462,7 @@ impl<'a> UnnamedParam<'a> {
     fn build_arm_parse_value(&self, index: usize) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         let span = self.info.field.span();
-        let expr = build_parse_expr(&self.ty, span);
+        let expr = build_parse_expr(self.ty, span);
         quote_spanned! { span=>
             #index => {
                 #temp_ident = Some(#expr);
@@ -472,7 +472,7 @@ impl<'a> UnnamedParam<'a> {
     fn build_arm_parse_vec_item(&self) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         let span = self.info.field.span();
-        let expr = build_parse_expr(&self.ty, span);
+        let expr = build_parse_expr(self.ty, span);
         quote_spanned! { self.info.field.span()=>
             _ => {
                 #temp_ident.push(#expr);
