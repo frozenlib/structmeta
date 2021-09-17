@@ -1,7 +1,14 @@
 error[E0277]: the trait bound `NotParse: Parse` is not satisfied
- --> $DIR/vec_not_parse.rs:3:5
-  |
-3 |     x: Vec<NotParse>,
-  |     ^ the trait `Parse` is not implemented for `NotParse`
-  |
-  = note: required by `syn::punctuated::Punctuated::<T, P>::parse_terminated`
+   --> $DIR/vec_not_parse.rs:3:5
+    |
+3   |     x: Vec<NotParse>,
+    |     ^ the trait `Parse` is not implemented for `NotParse`
+    |
+note: required by `syn::punctuated::Punctuated::<T, P>::parse_terminated`
+   --> $DIR/punctuated.rs:267:5
+    |
+267 | /     pub fn parse_terminated(input: ParseStream) -> Result<Self>
+268 | |     where
+269 | |         T: Parse,
+270 | |         P: Parse,
+    | |_________________^
