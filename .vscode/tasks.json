@@ -44,7 +44,7 @@
       "label": "cargo test",
       "command": "cargo",
       "args": [
-        "test",
+        "test"
       ],
       "problemMatcher": [
         "$rustc"
@@ -60,54 +60,6 @@
       "dependsOn": [
         "include doc"
       ],
-    },
-    {
-      "type": "shell",
-      "label": "cargo test macro",
-      "command": "cargo",
-      "args": [
-        "+nightly",
-        "test",
-        "--target-dir",
-        "./target/macro_detail",
-        "--all-features"
-      ],
-      "problemMatcher": [
-        "$rustc"
-      ],
-      "presentation": {
-        "panel": "dedicated",
-        "clear": true
-      },
-      "options": {
-        "env": {
-          "RUSTFLAGS": "-Z macro-backtrace"
-        }
-      }
-    },
-    {
-      "type": "shell",
-      "label": "update compile error",
-      "command": "cargo",
-      "args": [
-        "test",
-        "--test",
-        "compile_fail",
-        "--",
-        "--ignored"
-      ],
-      "problemMatcher": [
-        "$rustc"
-      ],
-      "presentation": {
-        "panel": "dedicated",
-        "clear": true
-      },
-      "options": {
-        "env": {
-          "TRYBUILD": "overwrite"
-        }
-      }
     },
     {
       "type": "shell",
@@ -154,8 +106,6 @@
       "args": [
         "clippy",
         "--all-features",
-        "--tests",
-        "--lib",
         "--",
         "-W",
         "clippy::all"
@@ -166,6 +116,78 @@
       "presentation": {
         "panel": "dedicated",
         "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "cargo fix & fmt",
+      "command": "cargo fix && cargo fmt",
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true,
+      }
+    },
+    {
+      "type": "shell",
+      "label": "cargo bench",
+      "command": "cargo",
+      "args": [
+        "bench"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/benchmarks"
+      },
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "cargo update minimal-versions",
+      "command": "cargo",
+      "args": [
+        "+nightly",
+        "update",
+        "-Z",
+        "minimal-versions"
+      ],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "label": "update compile error",
+      "command": "cargo",
+      "args": [
+        "test",
+        "--test",
+        "compile_fail",
+        "--",
+        "--ignored"
+      ],
+      "problemMatcher": [
+        "$rustc"
+      ],
+      "presentation": {
+        "panel": "dedicated",
+        "clear": true
+      },
+      "options": {
+        "env": {
+          "TRYBUILD": "overwrite"
+        }
       }
     },
     {
@@ -204,31 +226,14 @@
     },
     {
       "type": "shell",
-      "label": "cargo bench",
-      "command": "cargo",
-      "args": [
-        "bench"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}/benchmarks"
-      },
-      "problemMatcher": [
-        "$rustc"
-      ],
-      "presentation": {
-        "panel": "dedicated",
-        "clear": true
-      }
-    },
-    {
-      "type": "shell",
-      "label": "cargo update minimal-versions",
+      "label": "cargo test macro",
       "command": "cargo",
       "args": [
         "+nightly",
-        "update",
-        "-Z",
-        "minimal-versions"
+        "test",
+        "--target-dir",
+        "./target/macro_detail",
+        "--all-features"
       ],
       "problemMatcher": [
         "$rustc"
@@ -236,6 +241,11 @@
       "presentation": {
         "panel": "dedicated",
         "clear": true
+      },
+      "options": {
+        "env": {
+          "RUSTFLAGS": "-Z macro-backtrace"
+        }
       }
     },
   ]
