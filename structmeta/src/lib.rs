@@ -932,7 +932,7 @@ pub use structmeta_derive::Parse;
 ///
 /// # Parsing ambiguous arguments
 ///
-/// If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style.  
+/// If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style.
 /// If `name = value` style parameter is not defined, it will be parsed as unnamed parameter.
 ///
 /// ```rust
@@ -964,7 +964,7 @@ pub use structmeta_derive::Parse;
 /// assert!(result.is_err());
 /// ```
 ///
-/// Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.  
+/// Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.
 /// If `name(args)` style parameter is not defined, it will be parsed as unnamed parameter.
 // #[include_doc("../../doc/struct_meta.md", end)]
 pub use structmeta_derive::StructMeta;

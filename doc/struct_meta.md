@@ -481,7 +481,7 @@ assert_eq!(MSG, "xyz");
 
 # Parsing ambiguous arguments
 
-If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style.  
+If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style.
 If `name = value` style parameter is not defined, it will be parsed as unnamed parameter.
 
 ```rust
@@ -513,5 +513,5 @@ let result: Result<WithNamed> = attr_y.parse_args();
 assert!(result.is_err());
 ```
 
-Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.  
+Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.
 If `name(args)` style parameter is not defined, it will be parsed as unnamed parameter.
