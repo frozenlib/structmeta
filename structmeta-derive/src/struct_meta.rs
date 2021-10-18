@@ -1,7 +1,7 @@
 use crate::syn_utils::*;
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
@@ -52,7 +52,7 @@ struct Params<'a> {
     unnamed_required: Vec<UnnamedParam<'a>>,
     unnamed_optional: Vec<UnnamedParam<'a>>,
     unnamed_variadic: Option<UnnamedParam<'a>>,
-    named: HashMap<String, NamedParam<'a>>,
+    named: BTreeMap<String, NamedParam<'a>>,
     rest: Option<RestParam<'a>>,
 }
 impl<'a> Params<'a> {
@@ -60,7 +60,7 @@ impl<'a> Params<'a> {
         let mut unnamed_required = Vec::new();
         let mut unnamed_optional = Vec::new();
         let mut unnamed_variadic = None;
-        let mut named = HashMap::new();
+        let mut named = BTreeMap::new();
         let mut rest = None;
         for (index, field) in fields.iter().enumerate() {
             let span = field.span();
