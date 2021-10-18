@@ -398,7 +398,7 @@ impl<'a> NamedParam<'a> {
     }
     fn build_arm_parse(&self, index: usize, kind: ArgKind) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
-        let msg = format!("parameter `{}` speficied more than once", self.name);
+        let msg = format!("parameter `{}` specified more than once", self.name);
         let span = self.info.field.span();
         let expr = self.ty.build_parse_expr(kind, span);
         let var = kind.to_helper_name_index_variant();
@@ -448,7 +448,7 @@ impl<'a> RestParam<'a> {
         quote_spanned! { span=>
             ::structmeta::helpers::NameIndex::#var(Err(name)) => {
                 if #temp_ident.insert(name.to_string(), #expr).is_some() {
-                    return Err(::syn::Error::new(span, format!("parameter `{}` speficied more than once", name)));
+                    return Err(::syn::Error::new(span, format!("parameter `{}` specified more than once", name)));
                 }
             }
         }
@@ -756,7 +756,7 @@ fn is_string(ty: &Type) -> bool {
 }
 
 fn get_element<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a Type> {
-    if let PathArguments::AngleBracketed(args) = get_argumnets_of(ty, ns, name)? {
+    if let PathArguments::AngleBracketed(args) = get_arguments_of(ty, ns, name)? {
         if args.args.len() == 1 {
             if let GenericArgument::Type(ty) = &args.args[0] {
                 return Some(ty);
@@ -766,7 +766,7 @@ fn get_element<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a Type>
     None
 }
 fn get_element2<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<(&'a Type, &'a Type)> {
-    if let PathArguments::AngleBracketed(args) = get_argumnets_of(ty, ns, name)? {
+    if let PathArguments::AngleBracketed(args) = get_arguments_of(ty, ns, name)? {
         if args.args.len() == 2 {
             if let (GenericArgument::Type(ty0), GenericArgument::Type(ty1)) =
                 (&args.args[0], &args.args[1])
@@ -779,13 +779,13 @@ fn get_element2<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<(&'a Typ
 }
 
 fn is_type(ty: &Type, ns: &[&[&str]], name: &str) -> bool {
-    if let Some(a) = get_argumnets_of(ty, ns, name) {
+    if let Some(a) = get_arguments_of(ty, ns, name) {
         a.is_empty()
     } else {
         false
     }
 }
-fn get_argumnets_of<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a PathArguments> {
+fn get_arguments_of<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a PathArguments> {
     if let Type::Path(ty) = ty {
         if ty.qself.is_some() {
             return None;
