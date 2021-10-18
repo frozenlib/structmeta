@@ -1,4 +1,4 @@
-error: parameter `value` speficied more than once
+error: parameter `value` specified more than once
  --> $DIR/duplicate_named_arguments.rs:1:58
   |
 1 | #[structmeta_tests::attr_required_name_value(value = 10, value = 20)]

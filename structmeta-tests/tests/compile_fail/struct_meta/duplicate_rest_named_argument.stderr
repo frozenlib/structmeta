@@ -1,4 +1,4 @@
-error: parameter `a` speficied more than once
+error: parameter `a` specified more than once
  --> $DIR/duplicate_rest_named_argument.rs:1:50
   |
 1 | #[structmeta_tests::attr_rest_name_value(a = 10, a = 10)]
