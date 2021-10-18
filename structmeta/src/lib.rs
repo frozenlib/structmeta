@@ -14,7 +14,6 @@ mod arg_types;
 pub use arg_types::*;
 
 // #[include_doc("../../doc/to_tokens.md", start)]
-
 /// Derive [`quote::ToTokens`] for syntax tree node.
 ///
 /// - [Example](#example)
@@ -151,7 +150,6 @@ pub use arg_types::*;
 pub use structmeta_derive::ToTokens;
 
 // #[include_doc("../../doc/parse.md", start)]
-
 /// Derive [`syn::parse::Parse`] for syntax tree node.
 ///
 /// - [Example](#example)
@@ -448,7 +446,6 @@ pub use structmeta_derive::ToTokens;
 pub use structmeta_derive::Parse;
 
 // #[include_doc("../../doc/struct_meta.md", start)]
-
 /// Derive [`syn::parse::Parse`] for parsing attribute arguments.
 ///
 /// - [Example](#example)
