@@ -4,13 +4,13 @@ use syn::{DeriveInput, Path, Result, WherePredicate};
 
 macro_rules! bail {
     ($span:expr, $message:literal $(,)?) => {
-        return std::result::Result::Err(syn::Error::new($span, $message));
+        return std::result::Result::Err(syn::Error::new($span, $message))
     };
     ($span:expr, $err:expr $(,)?) => {
-        return std::result::Result::Err(syn::Error::new($span, $err));
+        return std::result::Result::Err(syn::Error::new($span, $err))
     };
     ($span:expr, $fmt:expr, $($arg:tt)*) => {
-        return std::result::Result::Err(syn::Error::new($span, std::format!($fmt, $($arg)*)));
+        return std::result::Result::Err(syn::Error::new($span, std::format!($fmt, $($arg)*)))
     };
     ($($tt:tt)*) => {
         bail!(proc_macro2::Span::call_site(), $($tt)*)
