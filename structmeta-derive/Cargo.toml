@@ -9,7 +9,7 @@ documentation = "https://docs.rs/structmeta/"
 keywords = ["derive", "parse", "attribute", "syn", "totokens"]
 categories = ["development-tools::procedural-macro-helpers"]
 description = "derive macro for structmeta crate."
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
