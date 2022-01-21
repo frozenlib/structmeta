@@ -1,14 +1,11 @@
 error[E0277]: the trait bound `NotParse: Parse` is not satisfied
-   --> $DIR/vec_not_parse.rs:3:5
+   --> tests/compile_fail/struct_meta/vec_not_parse.rs:3:5
     |
 3   |     x: Vec<NotParse>,
     |     ^ the trait `Parse` is not implemented for `NotParse`
     |
-note: required by `syn::punctuated::Punctuated::<T, P>::parse_terminated`
-   --> $DIR/punctuated.rs:267:5
+note: required by a bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
+   --> $CARGO/syn-1.0.82/src/punctuated.rs
     |
-267 | /     pub fn parse_terminated(input: ParseStream) -> Result<Self>
-268 | |     where
-269 | |         T: Parse,
-270 | |         P: Parse,
-    | |_________________^
+    |         T: Parse,
+    |            ^^^^^ required by this bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
