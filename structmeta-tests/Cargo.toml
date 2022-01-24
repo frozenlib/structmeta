@@ -15,4 +15,4 @@ structmeta = { path = "../structmeta" }
 proc-macro2 = "1.0.33"
 syn = { version = "1.0.82", features = ["extra-traits", "full"] }
 quote = "1.0.10"
-trybuild = "1.0.53"
+trybuild = "1.0.54"
