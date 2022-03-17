@@ -5,7 +5,7 @@ error[E0277]: the trait bound `HashMap<String, LitInt>: Parse` is not satisfied
     |     ^^^^ the trait `Parse` is not implemented for `HashMap<String, LitInt>`
     |
 note: required by a bound in `ParseBuffer::<'a>::parse`
-   --> $CARGO/syn-1.0.88/src/parse.rs
+   --> $CARGO/syn-1.0.89/src/parse.rs
     |
     |     pub fn parse<T: Parse>(&self) -> Result<T> {
     |                     ^^^^^ required by this bound in `ParseBuffer::<'a>::parse`
