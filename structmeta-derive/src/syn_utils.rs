@@ -12,10 +12,6 @@ macro_rules! bail {
     ($span:expr, $fmt:expr, $($arg:tt)*) => {
         return std::result::Result::Err(syn::Error::new($span, std::format!($fmt, $($arg)*)))
     };
-    ($($tt:tt)*) => {
-        bail!(proc_macro2::Span::call_site(), $($tt)*)
-    };
-
 }
 
 pub fn into_macro_output(input: Result<TokenStream>) -> proc_macro::TokenStream {

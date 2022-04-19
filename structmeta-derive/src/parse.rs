@@ -24,7 +24,7 @@ pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
         Data::Struct(data) => code_from_struct(data)?,
         Data::Enum(data) => code_from_enum(&input.ident, data)?,
         Data::Union(_) => {
-            bail!("Not supported for union.")
+            bail!(Span::call_site(), "Not supported for union.")
         }
     };
     let ts = quote! {
