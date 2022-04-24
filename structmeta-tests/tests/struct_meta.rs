@@ -377,6 +377,24 @@ fn test_struct_map() {
 }
 
 #[test]
+fn test_expr_or_flag() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Option<Expr>,
+        x: bool,
+    }
+    check(
+        pq!(#[attr(x)]),
+        Attr {
+            expr: None,
+            x: true,
+        },
+    );
+    check_err::<Attr>(pq!(#[attr(y)]));
+}
+
+#[test]
 fn test_expr_or_name_value() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
@@ -476,7 +494,17 @@ fn check_msg<T: Parse + PartialEq + Debug>(input: Attribute, expected: T, msg: &
             assert_eq!(value, expected, "{}", msg);
         }
         Err(e) => {
-            panic!("{} : parse faield. \n{}", msg, e)
+            panic!("{} : parse failed. \n{}", msg, e)
         }
+    }
+}
+
+#[track_caller]
+fn check_err<T: Parse + PartialEq + Debug>(input: Attribute) {
+    if let Ok(value) = input.parse_args::<T>() {
+        panic!(
+            "the parsing did not fail. \ninput : {:?}\n value : {:?}",
+            input, value
+        );
     }
 }
