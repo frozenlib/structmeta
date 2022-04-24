@@ -952,9 +952,10 @@ pub use structmeta_derive::Parse;
 /// assert_eq!(result.unnamed.is_some(), false);
 /// assert_eq!(result.x.is_some(), true);
 ///
+/// // `y = 10` is parsed as a wrong named parameter.
 /// let attr_y: Attribute = parse_quote!(#[attr(y = 10)]);
 /// let result: Result<WithNamed> = attr_y.parse_args();
-/// assert!(result.is_err()); // `y = 10` is parsed as a wrong named parameter.
+/// assert!(result.is_err());
 /// ```
 ///
 /// If `name = value` style parameter is not defined, it will be parsed as unnamed parameter.
@@ -969,9 +970,10 @@ pub use structmeta_derive::Parse;
 ///     unnamed: Option<Expr>,
 /// }
 ///
-/// let attr_x: Attribute = parse_quote!(#[attr(x = 10)]);
-/// let result: WithoutNamed = attr_x.parse_args().unwrap();
-/// assert_eq!(result.unnamed, Some(parse_quote!(x = 10)));
+/// // `y = 10` is parsed as a unnamed parameter.
+/// let attr_y: Attribute = parse_quote!(#[attr(y = 10)]);
+/// let result: WithoutNamed = attr_y.parse_args().unwrap();
+/// assert_eq!(result.unnamed, Some(parse_quote!(y = 10)));
 /// ```
 ///
 /// Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.
