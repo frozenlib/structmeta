@@ -416,7 +416,7 @@ fn name_filter() {
     check(
         pq!(#[attr(Y)]),
         Attr {
-            expr: Some(parse_quote!(Y)),
+            expr: Some(pq!(Y)),
             x: false,
         },
     );
