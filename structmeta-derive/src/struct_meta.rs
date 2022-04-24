@@ -17,7 +17,7 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
         let mut args = ArgsForStruct::default();
         for attr in &input.attrs {
             if attr.path.is_ident("struct_meta") {
-                args.parse_from_attr(&attr)?;
+                args.parse_from_attr(attr)?;
             }
         }
         let ps = Params::from_fields(&data.fields, &args)?;
