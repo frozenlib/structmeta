@@ -20,6 +20,7 @@ Derive [`syn::parse::Parse`] for parsing attribute arguments.
 - [Uses with `#[proc_macro_derive]`](#uses-with-proc_macro_derive)
 - [Uses with `#[proc_macro_attribute]`](#uses-with-proc_macro_attribute)
 - [Parsing ambiguous arguments](#parsing-ambiguous-arguments)
+  - [`#[struct_meta(name_filter = "...")]`](#struct_metaname_filter--)
 
 # Example
 
@@ -401,11 +402,12 @@ The parameters must be in the following order.
 
 # Helper attribute `#[struct_meta(...)]`
 
-| argument       | struct | field | effect                                                                                   |
-| -------------- | ------ | ----- | ---------------------------------------------------------------------------------------- |
-| `dump`         | ✔      |       | Causes a compile error and outputs the automatically generated code as an error message. |
-| `name = "..."` |        | ✔     | Specify a parameter name.                                                                |
-| `unnamed`      |        | ✔     | Make the field be treated as an unnamed parameter.                                       |
+| argument                                           | struct | field | effect                                                                                   |
+| -------------------------------------------------- | ------ | ----- | ---------------------------------------------------------------------------------------- |
+| `dump`                                             | ✔      |       | Causes a compile error and outputs the automatically generated code as an error message. |
+| [`name_filter = "..."`](#struct_metaname_filter--) | ✔      |       | Specify how to distinguish between a parameter name and a value of an unnamed parameter. |
+| `name = "..."`                                     |        | ✔     | Specify a parameter name.                                                                |
+| `unnamed`                                          |        | ✔     | Make the field be treated as an unnamed parameter.                                       |
 
 # Uses with `#[proc_macro_derive]`
 
@@ -481,7 +483,32 @@ assert_eq!(MSG, "xyz");
 
 # Parsing ambiguous arguments
 
-If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style.
+If one or more `name = value` style parameters are defined, arguments beginning with `name =` will be parsed as `name = value` style,
+even if the name is different from what it is defined as.
+
+This specification is intended to prevent `name = value` from being treated as unnamed parameter due to typo.
+
+```rust
+use structmeta::StructMeta;
+use syn::{parse_quote, Attribute, Expr, LitInt, Result};
+
+#[derive(StructMeta)]
+struct WithNamed {
+    #[struct_meta(unnamed)]
+    unnamed: Option<Expr>,
+    x: Option<LitInt>,
+}
+
+let attr_x: Attribute = parse_quote!(#[attr(x = 10)]);
+let result: WithNamed = attr_x.parse_args().unwrap();
+assert_eq!(result.unnamed.is_some(), false);
+assert_eq!(result.x.is_some(), true);
+
+let attr_y: Attribute = parse_quote!(#[attr(y = 10)]);
+let result: Result<WithNamed> = attr_y.parse_args();
+assert!(result.is_err()); // `y = 10` is parsed as a wrong named parameter.
+```
+
 If `name = value` style parameter is not defined, it will be parsed as unnamed parameter.
 
 ```rust
@@ -493,27 +520,48 @@ struct WithoutNamed {
     #[struct_meta(unnamed)]
     unnamed: Option<Expr>,
 }
-#[derive(StructMeta)]
-struct WithNamed {
-    #[struct_meta(unnamed)]
-    unnamed: Option<Expr>,
-    x: Option<LitInt>,
-}
 
 let attr_x: Attribute = parse_quote!(#[attr(x = 10)]);
-let attr_y: Attribute = parse_quote!(#[attr(y = 10)]);
 let result: WithoutNamed = attr_x.parse_args().unwrap();
-assert_eq!(result.unnamed.is_some(), true);
-
-let result: WithNamed = attr_x.parse_args().unwrap();
-assert_eq!(result.unnamed.is_some(), false);
-assert_eq!(result.x.is_some(), true);
-
-let result: Result<WithNamed> = attr_y.parse_args();
-assert!(result.is_err()); // `y = 10` is parsed as a wrong named parameter.
+assert_eq!(result.unnamed, Some(parse_quote!(x = 10)));
 ```
 
 Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.
 If `name(args)` style parameter is not defined, it will be parsed as unnamed parameter.
 
 The same is true for `name` style parameter.
+
+## `#[struct_meta(name_filter = "...")]`
+
+By attaching `#[struct_meta(name_filter = "...")]` to struct definition, you can restrict the names that can be used as parameter names and treat other identifiers as a value of unnamed parameter.
+
+The following value can be used.
+
+- `"snake_case"`
+
+```rust
+use structmeta::StructMeta;
+use syn::{parse_quote, Attribute, Expr, LitInt, Result};
+
+let attr: Attribute = parse_quote!(#[attr(X)]);
+
+#[derive(StructMeta)]
+struct NoFilter {
+    #[struct_meta(unnamed)]
+    unnamed: Option<Expr>,
+    x: bool,
+}
+let result: Result<NoFilter> = attr.parse_args();
+assert!(result.is_err()); // `X` is parsed as a wrong named parameter.
+
+#[derive(StructMeta)]
+#[struct_meta(name_filter = "snake_case")]
+struct WithFilter {
+    #[struct_meta(unnamed)]
+    unnamed: Option<Expr>,
+    x: bool,
+}
+let result: WithFilter = attr.parse_args().unwrap();
+assert_eq!(result.unnamed, Some(parse_quote!(X))); // `X` is parsed as a unnamed parameter.
+assert_eq!(result.x, false);
+```
