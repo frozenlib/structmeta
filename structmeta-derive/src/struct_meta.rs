@@ -14,17 +14,10 @@ use syn::{
 
 pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
     if let Data::Struct(data) = &input.data {
-        let mut dump = false;
+        let mut args = ArgsForStruct::default();
         for attr in &input.attrs {
             if attr.path.is_ident("struct_meta") {
-                let args = attr.parse_args_with(
-                    Punctuated::<StructMetaAttributeArgForStruct, Token![,]>::parse_terminated,
-                )?;
-                for arg in args {
-                    match arg {
-                        StructMetaAttributeArgForStruct::Dump(_) => dump = true,
-                    }
-                }
+                args.merge(attr.parse_args()?);
             }
         }
         let ps = Params::from_fields(&data.fields)?;
@@ -38,13 +31,11 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
                     #body
                 }
             },
-            dump,
+            args.dump,
         )
     } else {
-        bail!(
-            input.span(),
-            "`#[derive(StructMeta)]` supports only struct."
-        )
+        let span = input.span();
+        bail!(span, "`#[derive(StructMeta)]` supports only struct.")
     }
 }
 struct Params<'a> {
@@ -274,7 +265,7 @@ impl<'a> Param<'a> {
         let mut unnamed = false;
         for attr in &field.attrs {
             if attr.path.is_ident("struct_meta") {
-                let a = attr.parse_args::<StructMetaAttributeArgsForField>()?;
+                let a = attr.parse_args::<ArgsForField>()?;
                 if let Some(a_name) = a.name {
                     name = Some((a_name.value(), a_name.span()));
                     name_specified = true;
@@ -512,10 +503,32 @@ mod kw {
     custom_keyword!(unnamed);
 }
 
-enum StructMetaAttributeArgForStruct {
+#[derive(Debug, Default)]
+struct ArgsForStruct {
+    dump: bool,
+}
+
+impl Parse for ArgsForStruct {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let mut dump = false;
+        for p in Punctuated::<_, Token![,]>::parse_terminated(input)?.into_iter() {
+            match p {
+                ArgForStruct::Dump(_) => dump = true,
+            }
+        }
+        Ok(Self { dump })
+    }
+}
+impl ArgsForStruct {
+    fn merge(&mut self, other: Self) {
+        self.dump |= other.dump;
+    }
+}
+
+enum ArgForStruct {
     Dump(kw::dump),
 }
-impl Parse for StructMetaAttributeArgForStruct {
+impl Parse for ArgForStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(kw::dump) {
             return Ok(Self::Dump(input.parse()?));
@@ -524,27 +537,25 @@ impl Parse for StructMetaAttributeArgForStruct {
     }
 }
 
-struct StructMetaAttributeArgsForField {
+struct ArgsForField {
     name: Option<LitStr>,
     unnamed: bool,
 }
-impl Parse for StructMetaAttributeArgsForField {
+impl Parse for ArgsForField {
     fn parse(input: ParseStream) -> Result<Self> {
-        let mut this = Self {
-            name: None,
-            unnamed: false,
-        };
+        let mut name = None;
+        let mut unnamed = false;
         for p in Punctuated::<_, Token![,]>::parse_terminated(input)?.into_iter() {
             match p {
-                StructMetaAttributeArgForField::Name { value, .. } => this.name = Some(value),
-                StructMetaAttributeArgForField::Unnamed { .. } => this.unnamed = true,
+                ArgForField::Name { value, .. } => name = Some(value),
+                ArgForField::Unnamed { .. } => unnamed = true,
             }
         }
-        Ok(this)
+        Ok(Self { name, unnamed })
     }
 }
 
-enum StructMetaAttributeArgForField {
+enum ArgForField {
     Name {
         _name_token: kw::name,
         _eq_token: Token![=],
@@ -554,7 +565,7 @@ enum StructMetaAttributeArgForField {
         _unnamed_token: kw::unnamed,
     },
 }
-impl Parse for StructMetaAttributeArgForField {
+impl Parse for ArgForField {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(kw::name) && input.peek2(Token![=]) {
             let name_token = input.parse()?;
