@@ -510,8 +510,10 @@ assert_eq!(result.unnamed.is_some(), false);
 assert_eq!(result.x.is_some(), true);
 
 let result: Result<WithNamed> = attr_y.parse_args();
-assert!(result.is_err());
+assert!(result.is_err()); // `y = 10` is parsed as a wrong named parameter.
 ```
 
 Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.
 If `name(args)` style parameter is not defined, it will be parsed as unnamed parameter.
+
+The same is true for `name` style parameter.
