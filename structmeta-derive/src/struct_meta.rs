@@ -8,8 +8,8 @@ use syn::{
     parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
-    Data, DeriveInput, Field, Fields, GenericArgument, Ident, LitStr, PathArguments, PathSegment,
-    Result, Token, Type,
+    Attribute, Data, DeriveInput, Field, Fields, GenericArgument, Ident, LitStr, PathArguments,
+    PathSegment, Result, Token, Type,
 };
 
 pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
@@ -17,10 +17,10 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
         let mut args = ArgsForStruct::default();
         for attr in &input.attrs {
             if attr.path.is_ident("struct_meta") {
-                args.merge(attr.parse_args()?);
+                args.parse_from_attr(&attr)?;
             }
         }
-        let ps = Params::from_fields(&data.fields)?;
+        let ps = Params::from_fields(&data.fields, &args)?;
         let body = ps.build();
         impl_trait_result(
             &input,
@@ -45,9 +45,10 @@ struct Params<'a> {
     unnamed_variadic: Option<UnnamedParam<'a>>,
     named: BTreeMap<String, NamedParam<'a>>,
     rest: Option<RestParam<'a>>,
+    name_filter: NameFilter,
 }
 impl<'a> Params<'a> {
-    fn from_fields(fields: &'a Fields) -> Result<Self> {
+    fn from_fields(fields: &'a Fields, args: &ArgsForStruct) -> Result<Self> {
         let mut unnamed_required = Vec::new();
         let mut unnamed_optional = Vec::new();
         let mut unnamed_variadic = None;
@@ -98,6 +99,7 @@ impl<'a> Params<'a> {
             unnamed_variadic,
             named,
             rest,
+            name_filter: args.name_filter(),
         })
     }
     fn build(&self) -> TokenStream {
@@ -203,6 +205,7 @@ impl<'a> Params<'a> {
                 return Err(input.error("cannot use unnamed parameter"));
             }
         };
+        let name_filter = self.name_filter.to_code();
 
         ts.extend(quote! {
             let mut is_next = #is_next;
@@ -223,7 +226,8 @@ impl<'a> Params<'a> {
                     #name_value_rest,
                     &[#(#name_args_names,)*],
                     #name_args_rest,
-                    #no_unnamed)?
+                    #no_unnamed,
+                    #name_filter)?
                 {
                     named_used = true;
                     match index {
@@ -499,39 +503,74 @@ mod kw {
     use syn::custom_keyword;
 
     custom_keyword!(dump);
+    custom_keyword!(name_filter);
     custom_keyword!(name);
     custom_keyword!(unnamed);
 }
 
-#[derive(Debug, Default)]
-struct ArgsForStruct {
-    dump: bool,
+#[derive(Debug, Clone, Copy)]
+enum NameFilter {
+    None,
+    SnakeCase,
 }
-
-impl Parse for ArgsForStruct {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let mut dump = false;
-        for p in Punctuated::<_, Token![,]>::parse_terminated(input)?.into_iter() {
-            match p {
-                ArgForStruct::Dump(_) => dump = true,
-            }
+impl NameFilter {
+    fn to_code(self) -> TokenStream {
+        match self {
+            NameFilter::None => quote!(&|_| true),
+            NameFilter::SnakeCase => quote!(&::structmeta::helpers::is_snake_case),
         }
-        Ok(Self { dump })
     }
 }
+
+#[derive(Debug, Default, Clone, Copy)]
+struct ArgsForStruct {
+    dump: bool,
+    name_filter: Option<NameFilter>,
+}
 impl ArgsForStruct {
-    fn merge(&mut self, other: Self) {
-        self.dump |= other.dump;
+    fn parse_from_attr(&mut self, attr: &Attribute) -> Result<()> {
+        let args = attr.parse_args_with(Punctuated::<ArgForStruct, Token![,]>::parse_terminated)?;
+        for arg in args.into_iter() {
+            match arg {
+                ArgForStruct::Dump(_) => self.dump = true,
+                ArgForStruct::NameFilter { span, value } => {
+                    if self.name_filter.is_some() {
+                        bail!(span, "`name_filter` cannot be specified twice");
+                    }
+                    self.name_filter = Some(value);
+                }
+            }
+        }
+        Ok(())
+    }
+    fn name_filter(&self) -> NameFilter {
+        self.name_filter.unwrap_or(NameFilter::None)
     }
 }
 
 enum ArgForStruct {
     Dump(kw::dump),
+    NameFilter { span: Span, value: NameFilter },
 }
 impl Parse for ArgForStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(kw::dump) {
             return Ok(Self::Dump(input.parse()?));
+        }
+        if input.peek(kw::name_filter) {
+            let kw_name_filter: kw::name_filter = input.parse()?;
+            let _eq: Token![=] = input.parse()?;
+            let s: LitStr = input.parse()?;
+            let value = match s.value().as_str() {
+                "snake_case" => NameFilter::SnakeCase,
+                _ => {
+                    bail!(s.span(), "expected \"snake_case\"")
+                }
+            };
+            return Ok(Self::NameFilter {
+                span: kw_name_filter.span,
+                value,
+            });
         }
         Err(input.error("usage : #[struct_meta(dump)]"))
     }

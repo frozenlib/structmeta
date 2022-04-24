@@ -392,6 +392,34 @@ fn test_expr_or_flag() {
         },
     );
     check_err::<Attr>(pq!(#[attr(y)]));
+    check_err::<Attr>(pq!(#[attr(Y)]));
+}
+
+#[test]
+fn name_filter() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    #[struct_meta(name_filter = "snake_case")]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Option<Expr>,
+        x: bool,
+    }
+
+    check(
+        pq!(#[attr(x)]),
+        Attr {
+            expr: None,
+            x: true,
+        },
+    );
+    check_err::<Attr>(pq!(#[attr(y)]));
+    check(
+        pq!(#[attr(Y)]),
+        Attr {
+            expr: Some(parse_quote!(Y)),
+            x: false,
+        },
+    );
 }
 
 #[test]

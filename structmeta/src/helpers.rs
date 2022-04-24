@@ -21,69 +21,72 @@ pub fn try_parse_name(
     name_args_names: &[&str],
     name_args_rest: bool,
     no_unnamed: bool,
+    name_filter: &dyn Fn(&str) -> bool,
 ) -> Result<Option<(NameIndex, Span)>> {
     let may_flag = !flag_names.is_empty() || flag_rest;
     let may_name_value = !name_value_names.is_empty() || name_value_rest;
     let may_name_args = !name_args_names.is_empty() || name_args_rest;
     let fork = input.fork();
     if let Ok(ident) = Ident::parse_any(&fork) {
-        let span = ident.span();
-        let mut kind = None;
-        if (no_unnamed || may_flag) && (fork.peek(Token![,]) || fork.is_empty()) {
-            if let Some(i) = name_index_of(flag_names, flag_rest, &ident) {
-                input.advance_to(&fork);
-                return Ok(Some((NameIndex::Flag(i), span)));
-            }
-            kind = Some(ArgKind::Flag);
-        } else if (no_unnamed || may_name_value) && peek_eq_op(&fork) {
-            if let Some(i) = name_index_of(name_value_names, name_value_rest, &ident) {
-                fork.parse::<Token![=]>()?;
-                input.advance_to(&fork);
-                return Ok(Some((NameIndex::NameValue(i), span)));
-            }
-            kind = Some(ArgKind::NameValue);
-        } else if (no_unnamed || may_name_args) && fork.peek(token::Paren) {
-            if let Some(i) = name_index_of(name_args_names, name_args_rest, &ident) {
-                input.advance_to(&fork);
-                return Ok(Some((NameIndex::NameArgs(i), span)));
-            }
-            kind = Some(ArgKind::NameArgs);
-        };
+        if name_filter(&ident.to_string()) {
+            let span = ident.span();
+            let mut kind = None;
+            if (no_unnamed || may_flag) && (fork.peek(Token![,]) || fork.is_empty()) {
+                if let Some(i) = name_index_of(flag_names, flag_rest, &ident) {
+                    input.advance_to(&fork);
+                    return Ok(Some((NameIndex::Flag(i), span)));
+                }
+                kind = Some(ArgKind::Flag);
+            } else if (no_unnamed || may_name_value) && peek_eq_op(&fork) {
+                if let Some(i) = name_index_of(name_value_names, name_value_rest, &ident) {
+                    fork.parse::<Token![=]>()?;
+                    input.advance_to(&fork);
+                    return Ok(Some((NameIndex::NameValue(i), span)));
+                }
+                kind = Some(ArgKind::NameValue);
+            } else if (no_unnamed || may_name_args) && fork.peek(token::Paren) {
+                if let Some(i) = name_index_of(name_args_names, name_args_rest, &ident) {
+                    input.advance_to(&fork);
+                    return Ok(Some((NameIndex::NameArgs(i), span)));
+                }
+                kind = Some(ArgKind::NameArgs);
+            };
 
-        if kind.is_some() || no_unnamed {
-            let mut expected = Vec::new();
-            if let Some(name) = name_of(flag_names, flag_rest, &ident) {
-                expected.push(format!("flag `{}`", name));
-            }
-            if let Some(name) = name_of(name_value_names, name_value_rest, &ident) {
-                expected.push(format!("`{} = ...`", name));
-            }
-            if let Some(name) = name_of(name_args_names, name_args_rest, &ident) {
-                expected.push(format!("`{}(...)`", name));
-            }
-            if !expected.is_empty() {
-                return Err(input.error(msg(
-                    &expected,
-                    kind.map(|kind| Arg {
-                        kind,
-                        ident: &ident,
-                    }),
+            if kind.is_some() || no_unnamed {
+                let mut expected = Vec::new();
+                if let Some(name) = name_of(flag_names, flag_rest, &ident) {
+                    expected.push(format!("flag `{}`", name));
+                }
+                if let Some(name) = name_of(name_value_names, name_value_rest, &ident) {
+                    expected.push(format!("`{} = ...`", name));
+                }
+                if let Some(name) = name_of(name_args_names, name_args_rest, &ident) {
+                    expected.push(format!("`{}(...)`", name));
+                }
+                if !expected.is_empty() {
+                    return Err(input.error(msg(
+                        &expected,
+                        kind.map(|kind| Arg {
+                            kind,
+                            ident: &ident,
+                        }),
+                    )));
+                }
+                let help = if let Some(similar_name) =
+                    find_similar_name(&[flag_names, name_value_names, name_args_names], &ident)
+                {
+                    format!(
+                        " (help: a parameter with a similar name exists: `{}`)",
+                        similar_name
+                    )
+                } else {
+                    "".into()
+                };
+                return Err(input.error(format!(
+                    "cannot find parameter `{}` in this scope{}",
+                    ident, help
                 )));
             }
-            let help = if let Some(similar_name) =
-                find_similar_name(&[flag_names, name_value_names, name_args_names], &ident)
-            {
-                format!(
-                    " (help: a parameter with a similar name exists: `{}`)",
-                    similar_name
-                )
-            } else {
-                "".into()
-            };
-            return Err(input.error(format!(
-                "cannot find parameter `{}` in this scope{}",
-                ident, help
-            )));
         }
     }
     if no_unnamed {
@@ -210,6 +213,12 @@ fn distance(s0: &[char], s1: &[char]) -> Option<usize> {
 
     None
 }
+
+pub fn is_snake_case(s: &str) -> bool {
+    s.chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+}
+
 #[test]
 fn test_is_near() {
     fn check(s0: &str, s1: &str, e: Option<usize>) {
