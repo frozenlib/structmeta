@@ -4,8 +4,18 @@ error[E0277]: the trait bound `NotParse: Parse` is not satisfied
 3   |     x: Vec<NotParse>,
     |     ^ the trait `Parse` is not implemented for `NotParse`
     |
+    = help: the following other types implement trait `Parse`:
+              Abi
+              Abstract
+              AndAnd
+              AndEq
+              AngleBracketedGenericArguments
+              Arm
+              As
+              At
+            and 251 others
 note: required by a bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
-   --> $CARGO/syn-1.0.94/src/punctuated.rs
+   --> $CARGO/syn-1.0.98/src/punctuated.rs
     |
     |         T: Parse,
     |            ^^^^^ required by this bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`

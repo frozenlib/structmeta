@@ -3,3 +3,14 @@ error[E0277]: the trait bound `X: ToTokens` is not satisfied
   |
 4 |     x: X,
   |     ^ the trait `ToTokens` is not implemented for `X`
+  |
+  = help: the following other types implement trait `ToTokens`:
+            &'a T
+            &'a mut T
+            Box<T>
+            Cow<'a, T>
+            Option<T>
+            Rc<T>
+            RepInterp<T>
+            String
+          and 309 others

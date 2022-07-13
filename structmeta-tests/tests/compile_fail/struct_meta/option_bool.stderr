@@ -4,8 +4,18 @@ error[E0277]: the trait bound `bool: Parse` is not satisfied
 3   |     flag: Option<bool>,
     |     ^^^^ the trait `Parse` is not implemented for `bool`
     |
+    = help: the following other types implement trait `Parse`:
+              Abi
+              Abstract
+              AndAnd
+              AndEq
+              AngleBracketedGenericArguments
+              Arm
+              As
+              At
+            and 251 others
 note: required by a bound in `ParseBuffer::<'a>::parse`
-   --> $CARGO/syn-1.0.94/src/parse.rs
+   --> $CARGO/syn-1.0.98/src/parse.rs
     |
     |     pub fn parse<T: Parse>(&self) -> Result<T> {
     |                     ^^^^^ required by this bound in `ParseBuffer::<'a>::parse`
