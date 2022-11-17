@@ -1,8 +1,8 @@
 error[E0277]: the trait bound `structmeta::Flag: Parse` is not satisfied
-   --> tests/compile_fail/struct_meta/option_flag.rs:5:5
+   --> tests/compile_fail/struct_meta/option_flag.rs:5:18
     |
 5   |     flag: Option<Flag>,
-    |     ^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
+    |                  ^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
     |
     = help: the following other types implement trait `Parse`:
               Abi

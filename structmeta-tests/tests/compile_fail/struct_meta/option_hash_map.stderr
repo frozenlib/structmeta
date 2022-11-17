@@ -1,8 +1,8 @@
 error[E0277]: the trait bound `HashMap<String, LitInt>: Parse` is not satisfied
-   --> tests/compile_fail/struct_meta/option_hash_map.rs:6:5
+   --> tests/compile_fail/struct_meta/option_hash_map.rs:6:18
     |
 6   |     rest: Option<HashMap<String, LitInt>>,
-    |     ^^^^ the trait `Parse` is not implemented for `HashMap<String, LitInt>`
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `HashMap<String, LitInt>`
     |
     = help: the following other types implement trait `Parse`:
               Abi
