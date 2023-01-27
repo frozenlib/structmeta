@@ -519,10 +519,10 @@ fn check<T: Parse + PartialEq + Debug>(input: Attribute, expected: T) {
 fn check_msg<T: Parse + PartialEq + Debug>(input: Attribute, expected: T, msg: &str) {
     match input.parse_args::<T>() {
         Ok(value) => {
-            assert_eq!(value, expected, "{}", msg);
+            assert_eq!(value, expected, "{msg}");
         }
         Err(e) => {
-            panic!("{} : parse failed. \n{}", msg, e)
+            panic!("{msg} : parse failed. \n{e}")
         }
     }
 }
@@ -530,9 +530,6 @@ fn check_msg<T: Parse + PartialEq + Debug>(input: Attribute, expected: T, msg: &
 #[track_caller]
 fn check_err<T: Parse + PartialEq + Debug>(input: Attribute) {
     if let Ok(value) = input.parse_args::<T>() {
-        panic!(
-            "the parsing did not fail. \ninput : {:?}\n value : {:?}",
-            input, value
-        );
+        panic!("the parsing did not fail. \ninput : {input:?}\n value : {value:?}");
     }
 }

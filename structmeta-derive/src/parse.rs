@@ -269,9 +269,9 @@ fn to_var_ident(index: usize, ident: &Option<Ident>) -> Ident {
 }
 fn to_display(index: usize, ident: &Option<Ident>) -> String {
     if let Some(ident) = ident {
-        format!("{}", ident)
+        format!("{ident}")
     } else {
-        format!("{}", index)
+        format!("{index}")
     }
 }
 

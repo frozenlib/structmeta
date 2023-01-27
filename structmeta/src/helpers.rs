@@ -55,13 +55,13 @@ pub fn try_parse_name(
             if kind.is_some() || no_unnamed {
                 let mut expected = Vec::new();
                 if let Some(name) = name_of(flag_names, flag_rest, &ident) {
-                    expected.push(format!("flag `{}`", name));
+                    expected.push(format!("flag `{name}`"));
                 }
                 if let Some(name) = name_of(name_value_names, name_value_rest, &ident) {
-                    expected.push(format!("`{} = ...`", name));
+                    expected.push(format!("`{name} = ...`"));
                 }
                 if let Some(name) = name_of(name_args_names, name_args_rest, &ident) {
-                    expected.push(format!("`{}(...)`", name));
+                    expected.push(format!("`{name}(...)`"));
                 }
                 if !expected.is_empty() {
                     return Err(input.error(msg(
@@ -75,16 +75,12 @@ pub fn try_parse_name(
                 let help = if let Some(similar_name) =
                     find_similar_name(&[flag_names, name_value_names, name_args_names], &ident)
                 {
-                    format!(
-                        " (help: a parameter with a similar name exists: `{}`)",
-                        similar_name
-                    )
+                    format!(" (help: a parameter with a similar name exists: `{similar_name}`)",)
                 } else {
                     "".into()
                 };
                 return Err(input.error(format!(
-                    "cannot find parameter `{}` in this scope{}",
-                    ident, help
+                    "cannot find parameter `{ident}` in this scope{help}"
                 )));
             }
         }
@@ -224,7 +220,7 @@ fn test_is_near() {
     fn check(s0: &str, s1: &str, e: Option<usize>) {
         let c0: Vec<_> = s0.chars().collect();
         let c1: Vec<_> = s1.chars().collect();
-        assert_eq!(distance(&c0, &c1), e, "{} , {}", s0, s1)
+        assert_eq!(distance(&c0, &c1), e, "{s0} , {s1}")
     }
     check("a", "a", Some(0));
     check("a", "b", Some(1));

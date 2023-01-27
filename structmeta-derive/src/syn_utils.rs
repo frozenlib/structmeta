@@ -55,7 +55,7 @@ pub fn impl_trait_result(
 ) -> Result<TokenStream> {
     let ts = impl_trait(input, trait_path, wheres, contents);
     if dump {
-        panic!("macro result: \n{}", ts);
+        panic!("macro result: \n{ts}");
     }
     Ok(ts)
 }

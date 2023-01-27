@@ -57,6 +57,6 @@ pub fn to_close(c: char) -> char {
         '(' => ')',
         '[' => ']',
         '{' => '}',
-        _ => panic!("not found closing delimiter for {}", c),
+        _ => panic!("not found closing delimiter for {c}"),
     }
 }
