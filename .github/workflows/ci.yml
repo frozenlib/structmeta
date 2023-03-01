@@ -27,6 +27,14 @@ jobs:
         run: cargo clippy --all-features --tests --lib -- -W clippy::all
         env:
           RUSTFLAGS: -D warnings
+      - name: Clean 
+        run: cargo clean
+      - name: Run tests structmeta-derive
+        run: cargo test -p structmeta-derive
+      - name: Clean 
+        run: cargo clean
+      - name: Run tests structmeta
+        run: cargo test -p structmeta
       - name: Rustup toolchain install nightly
         run: rustup toolchain install nightly
       - name: Set minimal versions
