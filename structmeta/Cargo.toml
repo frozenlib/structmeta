@@ -21,4 +21,4 @@ quote = "1.0.10"
 
 
 [dev-dependencies]
-syn = { version = "1.0.82", features = ["full"] }
+syn = { version = "1.0.82", features = ["extra-traits", "full"] }
