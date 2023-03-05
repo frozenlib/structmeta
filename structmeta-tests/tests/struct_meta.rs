@@ -498,6 +498,23 @@ fn test_unnamed_similar_name_value() {
     check(pq!(#[attr(a = 10)]), Attr(Some(pq!(a = 10))));
 }
 
+#[test]
+fn test_required_unnamed_then_name_value_similar() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        #[struct_meta(unnamed)]
+        expr: Expr,
+        x: Option<NameValue<LitInt>>,
+    }
+    check(
+        pq!(#[attr(x = 1)]),
+        Attr {
+            expr: pq!(x = 1),
+            x: None,
+        },
+    );
+}
+
 fn name_value<T>(value: T) -> NameValue<T> {
     NameValue {
         value,
