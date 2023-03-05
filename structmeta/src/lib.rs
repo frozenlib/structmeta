@@ -979,7 +979,7 @@ pub use structmeta_derive::Parse;
 /// Similarly, if one or more `name(args)` style parameters are defined, arguments with `name(args)` will be parsed as `name(args)` style.
 /// If `name(args)` style parameter is not defined, it will be parsed as unnamed parameter.
 ///
-/// The same is true for `name` style parameter.
+/// The same is true for `name` or `name = value` style parameter.
 ///
 /// ## `#[struct_meta(name_filter = "...")]`
 ///
@@ -993,25 +993,33 @@ pub use structmeta_derive::Parse;
 /// use structmeta::StructMeta;
 /// use syn::{parse_quote, Attribute, Expr, LitInt, Result};
 ///
-/// let attr: Attribute = parse_quote!(#[attr(X)]);
+/// let attr_x: Attribute = parse_quote!(#[attr(X)]);
+/// let attr_y: Attribute = parse_quote!(#[attr(Y)]);
 ///
 /// #[derive(StructMeta)]
 /// struct NoFilter {
 ///     #[struct_meta(unnamed)]
 ///     unnamed: Option<Expr>,
+///     #[struct_meta(name = "X")]
 ///     x: bool,
 /// }
-/// let result: Result<NoFilter> = attr.parse_args();
-/// assert!(result.is_err()); // `X` is parsed as a wrong named parameter.
+/// let result: NoFilter = attr_x.parse_args().unwrap();
+/// assert_eq!(result.unnamed, None);
+/// assert_eq!(result.x, true); // `X` is parsed as a named parameter.
+///
+/// let result: Result<NoFilter> = attr_y.parse_args();
+/// assert!(result.is_err()); // `Y` is parsed as a wrong named parameter.
+///
 ///
 /// #[derive(StructMeta)]
 /// #[struct_meta(name_filter = "snake_case")]
 /// struct WithFilter {
 ///     #[struct_meta(unnamed)]
 ///     unnamed: Option<Expr>,
+///     #[struct_meta(name = "X")]
 ///     x: bool,
 /// }
-/// let result: WithFilter = attr.parse_args().unwrap();
+/// let result: WithFilter = attr_x.parse_args().unwrap();
 /// assert_eq!(result.unnamed, Some(parse_quote!(X))); // `X` is parsed as a unnamed parameter.
 /// assert_eq!(result.x, false);
 /// ```
