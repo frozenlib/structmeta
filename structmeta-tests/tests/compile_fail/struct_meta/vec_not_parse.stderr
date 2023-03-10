@@ -1,21 +1,21 @@
 error[E0277]: the trait bound `NotParse: Parse` is not satisfied
-   --> tests/compile_fail/struct_meta/vec_not_parse.rs:3:5
-    |
-3   |     x: Vec<NotParse>,
-    |     ^ the trait `Parse` is not implemented for `NotParse`
-    |
-    = help: the following other types implement trait `Parse`:
-              Abi
-              Abstract
-              AndAnd
-              AndEq
-              AngleBracketedGenericArguments
-              Arm
-              As
-              At
-            and 251 others
+ --> tests/compile_fail/struct_meta/vec_not_parse.rs:3:5
+  |
+3 |     x: Vec<NotParse>,
+  |     ^ the trait `Parse` is not implemented for `NotParse`
+  |
+  = help: the following other types implement trait `Parse`:
+            Abi
+            Abstract
+            AndAnd
+            AndEq
+            AngleBracketedGenericArguments
+            Arm
+            As
+            At
+          and $N others
 note: required by a bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
-   --> $CARGO/syn-1.0.105/src/punctuated.rs
-    |
-    |         T: Parse,
-    |            ^^^^^ required by this bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
+ --> $CARGO/syn-1.0.105/src/punctuated.rs
+  |
+  |         T: Parse,
+  |            ^^^^^ required by this bound in `Punctuated::<T, P>::parse_terminated`

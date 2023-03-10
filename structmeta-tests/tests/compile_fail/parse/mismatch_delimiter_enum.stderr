@@ -1,7 +1,7 @@
 error[E0308]: mismatched types
- --> $DIR/mismatch_delimiter_enum.rs:7:9
+ --> tests/compile_fail/parse/mismatch_delimiter_enum.rs:7:9
   |
 7 |         braket_token: syn::token::Bracket,
   |         ^^^^^^^^^^^^  ------------------- expected due to this
   |         |
-  |         expected struct `syn::token::Bracket`, found struct `syn::token::Paren`
+  |         expected struct `Bracket`, found struct `Paren`

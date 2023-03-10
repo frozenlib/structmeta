@@ -1,21 +1,21 @@
 error[E0308]: mismatched types
-   --> tests/compile_fail/to_tokens/mismatch_delimiter.rs:6:5
-    |
-5   |     #[to_tokens("(")]
-    |     - arguments to this function are incorrect
-6   |     braket_token: syn::token::Bracket,
-    |     ^^^^^^^^^^^^ expected struct `syn::token::Paren`, found struct `syn::token::Bracket`
-    |
-    = note: expected reference `&syn::token::Paren`
-               found reference `&syn::token::Bracket`
+ --> tests/compile_fail/to_tokens/mismatch_delimiter.rs:6:5
+  |
+5 |     #[to_tokens("(")]
+  |     - arguments to this function are incorrect
+6 |     braket_token: syn::token::Bracket,
+  |     ^^^^^^^^^^^^ expected struct `Paren`, found struct `Bracket`
+  |
+  = note: expected reference `&syn::token::Paren`
+             found reference `&syn::token::Bracket`
 note: associated function defined here
-   --> $CARGO/syn-1.0.105/src/token.rs
-    |
-    | / define_delimiters! {
-    | |     "{"           pub struct Brace        /// `{...}`
-    | |     "["           pub struct Bracket      /// `[...]`
-    | |     "("           pub struct Paren        /// `(...)`
-    | |     " "           pub struct Group        /// None-delimited group
-    | | }
-    | |_^
-    = note: this error originates in the macro `define_delimiters` (in Nightly builds, run with -Z macro-backtrace for more info)
+ --> $CARGO/syn-1.0.105/src/token.rs
+  |
+  | / define_delimiters! {
+  | |     "{"           pub struct Brace        /// `{...}`
+  | |     "["           pub struct Bracket      /// `[...]`
+  | |     "("           pub struct Paren        /// `(...)`
+  | |     " "           pub struct Group        /// None-delimited group
+  | | }
+  | |_^
+  = note: this error originates in the macro `define_delimiters` (in Nightly builds, run with -Z macro-backtrace for more info)
