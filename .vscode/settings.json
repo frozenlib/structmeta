@@ -1,5 +1,8 @@
 {
     "rust-analyzer.procMacro.enable": true,
+    "rust-analyzer.server.extraEnv": {
+        "CARGO_TARGET_DIR": "./target/debug-ra",
+    },
     "markdownlint.config": {
         "MD041": false,
     },
