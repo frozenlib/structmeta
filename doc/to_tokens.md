@@ -2,9 +2,7 @@ Derive [`quote::ToTokens`] for syntax tree node.
 
 - [Example](#example)
 - [Helper attributes](#helper-attributes)
-  - [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-to_tokens)
-  - [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-to_tokens-1)
-  - [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-to_tokens-2)
+  - [`#[to_tokens("[", "]", "(", ")", "{", "}"]`](#to_tokens-----)
   - [`#[to_tokens(dump)]`](#to_tokensdump)
 
 # Example
@@ -63,19 +61,19 @@ impl quote::ToTokens for Example {
 
 # Helper attributes
 
-|                                                                    | struct | enum | varaint | field |
-| ------------------------------------------------------------------ | ------ | ---- | ------- | ----- |
-| [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-to_tokens)   |        |      |         | ✔     |
-| [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-to_tokens-1) |        |      |         | ✔     |
-| [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-to_tokens-2) |        |      |         | ✔     |
-| [`#[to_tokens(dump)]`](#to_tokensdump)                             | ✔      | ✔    |         |       |
+|                                                             | struct | enum | varaint | field |
+| ----------------------------------------------------------- | ------ | ---- | ------- | ----- |
+| [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-----) |        |      |         | ✔     |
+| [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-----) |        |      |         | ✔     |
+| [`#[to_tokens("{")]`, `#[to_tokens("}")]`](#to_tokens-----) |        |      |         | ✔     |
+| [`#[to_tokens(dump)]`](#to_tokensdump)                      | ✔      | ✔    |         |       |
 
-## `#[to_tokens("[")]`, `#[to_tokens("]")]`
+## `#[to_tokens("[", "]", "(", ")", "{", "}"]`
 
-By specifying `#[to_tokens("[")]` for a field of type [`struct@syn::token::Bracket`], subsequent tokens will be enclosed in `[]`.
+By specifying `#[to_tokens("[")]` or `#[to_tokens("(")]` or `#[to_tokens("[")]` , subsequent tokens will be enclosed in `[]` or `()` or `{}`.
 
 By default, all subsequent fields are enclosed.
-To restrict the enclosing fields, specify `#[to_tokens("]")]` for the field after the end of the enclosure.
+To restrict the enclosing fields, specify `#[to_tokens("]")]` or `#[to_tokens(")")]` or `#[to_tokens("}")]` for the field after the end of the enclosure.
 
 ```rust
 use syn::{token, LitInt};
@@ -113,19 +111,16 @@ impl quote::ToTokens for Example {
 }
 ```
 
-## `#[to_tokens("(")]`, `#[to_tokens(")")]`
+If the field type is `Braket` or `Paren` or `Brace`, the symbol corresponding to the token type must be specified.
 
-By specifying `#[to_tokens("(")]` for a field of type [`struct@syn::token::Paren`], subsequent tokens will be enclosed in `()`.
+If the field type is `MacroDelimiter`, any symbol can be used and there is no difference in behavior. (Three types of parentheses are available, no matter which symbol is specified.)
 
-By default, all subsequent fields are enclosed.
-To restrict the enclosing fields, specify `#[to_tokens(")")]` for the field after the end of the enclosure.
-
-## `#[to_tokens("{")]`, `#[to_tokens("}")]`
-
-By specifying `#[to_tokens("{")]` for a field of type [`struct@syn::token::Brace`], subsequent tokens will be enclosed in `{}`.
-
-By default, all subsequent fields are enclosed.
-To restrict the enclosing fields, specify `#[to_tokens("}")]` for the field after the end of the enclosure.
+| field type                     | start                   | end                     |
+| ------------------------------ | ----------------------- | ----------------------- |
+| [`struct@syn::token::Bracket`] | `"["`                   | `"]"`                   |
+| [`struct@syn::token::Paren`]   | `"("`                   | `")"`                   |
+| [`struct@syn::token::Brace`]   | `"{"`                   | `"}"`                   |
+| [`enum@syn::MacroDelimiter`]   | `"["` or `"("` or `"{"` | `"]"` or `")"` or `"}"` |
 
 ## `#[to_tokens(dump)]`
 
