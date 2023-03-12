@@ -1,7 +1,9 @@
 use proc_macro2::{Ident, Spacing, Span, TokenStream};
 use syn::{
+    braced, bracketed,
     ext::IdentExt,
-    parse::{discouraged::Speculative, ParseStream},
+    parenthesized,
+    parse::{discouraged::Speculative, ParseBuffer, ParseStream},
     token::{self},
     MacroDelimiter, Result, Token,
 };
@@ -256,6 +258,35 @@ impl Surround for MacroDelimiter {
             MacroDelimiter::Brace(b) => b.surround(tokens, f),
         }
     }
+}
+
+pub fn parse_macro_delimiter<'a>(
+    input: &ParseBuffer<'a>,
+) -> Result<(MacroDelimiter, ParseBuffer<'a>)> {
+    let content;
+    let token = if input.peek(token::Paren) {
+        MacroDelimiter::Paren(parenthesized!(content in input))
+    } else if input.peek(token::Bracket) {
+        MacroDelimiter::Bracket(bracketed!(content in input))
+    } else if input.peek(token::Brace) {
+        MacroDelimiter::Brace(braced!(content in input))
+    } else {
+        return Err(input.error("expected `(`, `[` or `{`"));
+    };
+    Ok((token, content))
+}
+
+#[macro_export]
+macro_rules! helpers_parse_macro_delimiter {
+    ($content:ident in $input:ident) => {
+        match $crate::helpers::parse_macro_delimiter($input) {
+            Ok((token, content)) => {
+                $content = content;
+                token
+            }
+            Err(e) => return Err(e),
+        }
+    };
 }
 
 #[test]

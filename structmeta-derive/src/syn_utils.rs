@@ -1,6 +1,9 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, Path, Result, WherePredicate};
+use syn::{
+    punctuated::Punctuated, DeriveInput, Path, PathArguments, PathSegment, Result, Token, Type,
+    WherePredicate,
+};
 
 macro_rules! bail {
     ($span:expr, $message:literal $(,)?) => {
@@ -58,4 +61,44 @@ pub fn impl_trait_result(
         panic!("macro result: \n{ts}");
     }
     Ok(ts)
+}
+
+pub fn is_type(ty: &Type, ns: &[&[&str]], name: &str) -> bool {
+    if let Some(a) = get_arguments_of(ty, ns, name) {
+        a.is_empty()
+    } else {
+        false
+    }
+}
+pub fn get_arguments_of<'a>(ty: &'a Type, ns: &[&[&str]], name: &str) -> Option<&'a PathArguments> {
+    if let Type::Path(ty) = ty {
+        if ty.qself.is_some() {
+            return None;
+        }
+        let ss = &ty.path.segments;
+        if let Some(last) = ty.path.segments.last() {
+            if last.ident != name {
+                return None;
+            }
+            return if ns.iter().any(|ns| is_match_ns(ss, ns)) {
+                Some(&last.arguments)
+            } else {
+                None
+            };
+        }
+    }
+    None
+}
+pub fn is_match_ns(ss: &Punctuated<PathSegment, Token![::]>, ns: &[&str]) -> bool {
+    let mut i_ss = ss.len() - 1;
+    let mut i_ns = ns.len();
+    while i_ss > 0 && i_ns > 0 {
+        i_ns -= 1;
+        i_ss -= 1;
+        let s = &ss[i_ss];
+        if s.ident != ns[i_ns] || !s.arguments.is_empty() {
+            return false;
+        }
+    }
+    i_ss == 0
 }

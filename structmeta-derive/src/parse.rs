@@ -11,6 +11,8 @@ use syn::{
     Data, DataEnum, DataStruct, DeriveInput, Fields, Ident, Result, Token,
 };
 
+const NS_SYN: &[&[&str]] = &[&["syn"]];
+
 pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
     let mut dump = false;
     for attr in &input.attrs {
@@ -157,13 +159,19 @@ fn code_from_fields(
                         match c {
                             '(' | '[' | '{' => {
                                 use_parse = false;
-                                let parse_bracket = to_parse_bracket(c);
+                                let parse_bracket = if is_type(&field.ty, NS_SYN, "MacroDelimiter")
+                                {
+                                    quote!(::structmeta::helpers_parse_macro_delimiter)
+                                } else {
+                                    let parse_bracket = to_parse_bracket(c);
+                                    quote!(::syn::#parse_bracket)
+                                };
                                 let input_old = &scopes.last().unwrap().input;
                                 let input = format_ident!("input_{}", index);
                                 let ty = &field.ty;
                                 let code = quote_spanned!(field.span()=>
                                     let #input;
-                                    let #var_ident = ::syn::#parse_bracket!(#input in #input_old);
+                                    let #var_ident = #parse_bracket!(#input in #input_old);
                                     let #var_ident : #ty = #var_ident;
                                     let #input = &#input;
                                 );

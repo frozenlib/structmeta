@@ -3,8 +3,8 @@ mod test_utils;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use structmeta::{Parse, ToTokens};
-use syn::Ident;
 use syn::{parse::Parse, punctuated::Punctuated, token, Expr, LitInt, LitStr, Token};
+use syn::{Ident, MacroDelimiter};
 use test_utils::*;
 
 #[test]
@@ -174,6 +174,37 @@ fn bracket_close() {
         value: Expr,
     }
     assert_parse::<TestStruct>(quote!(["abc" = ] 1 + 2 ));
+}
+
+#[test]
+fn macro_delimiter_all() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        paren_token: MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: Token![=],
+        value: Expr,
+    }
+    assert_parse::<TestStruct>(quote!(["abc" = 1 + 2]));
+    assert_parse::<TestStruct>(quote!(("abc" = 1 + 2)));
+    assert_parse::<TestStruct>(quote!({ "abc" = 1 + 2 }));
+}
+
+#[test]
+fn macro_delimiter_close() {
+    #[derive(Parse, ToTokens)]
+    struct TestStruct {
+        #[to_tokens("(")]
+        brace_token: MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: Token![=],
+        #[to_tokens(")")]
+        value: Expr,
+    }
+    assert_parse::<TestStruct>(quote!(["abc" = ] 1 + 2 ));
+    assert_parse::<TestStruct>(quote!(("abc" = ) 1 + 2 ));
+    assert_parse::<TestStruct>(quote!({"abc" = } 1 + 2 ));
 }
 
 #[test]
