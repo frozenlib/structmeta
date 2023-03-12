@@ -123,16 +123,6 @@ fn close_char_of(delimiter: Delimiter) -> char {
     }
 }
 
-impl<'a> Surround<'a> {
-    fn token_type_ident(&self) -> Ident {
-        match self.delimiter {
-            Delimiter::Bracket => parse_quote!(Bracket),
-            Delimiter::Brace => parse_quote!(Brace),
-            Delimiter::Parenthesis => parse_quote!(Paren),
-            _ => unreachable!("unsupported delimiter"),
-        }
-    }
-}
 impl<'a> Scope<'a> {
     fn into_code(self, delimiter: Option<Delimiter>, span: Span) -> Result<TokenStream> {
         if let Some(s) = self.surround {
@@ -146,11 +136,11 @@ impl<'a> Scope<'a> {
                     )
                 }
             }
-            let ty = s.token_type_ident();
+            let ty = &s.field.ty;
             let ident = &s.ident;
             let ts = self.ts;
             return Ok(quote_spanned!(s.field.span()=>
-            ::syn::token::#ty::surround(#ident, tokens, |tokens| { #ts });
+                <#ty as ::structmeta::helpers::Surround>::surround(#ident, tokens, |tokens| { #ts });
             ));
         }
         Ok(quote!())

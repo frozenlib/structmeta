@@ -1,5 +1,6 @@
 mod test_utils;
 
+use proc_macro2::TokenStream;
 use quote::quote;
 use structmeta::ToTokens;
 use syn::parse_quote;
@@ -317,4 +318,138 @@ fn bracket_close() {
     };
     let ts = quote!(["abc" = ] 1 + 2 );
     assert_eq_ts(s, ts);
+}
+
+#[test]
+fn macro_delimiter_all() {
+    #[derive(ToTokens)]
+    struct TestStructParen {
+        #[to_tokens("(")]
+        delimiter: syn::MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+    #[derive(ToTokens)]
+    struct TestStructBrace {
+        #[to_tokens("{")]
+        delimiter: syn::MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+    #[derive(ToTokens)]
+    struct TestStructBraket {
+        #[to_tokens("[")]
+        delimiter: syn::MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        value: syn::Expr,
+    }
+
+    fn check(delimiter: syn::MacroDelimiter, ts: TokenStream) {
+        let s = TestStructParen {
+            delimiter: delimiter.clone(),
+            key: parse_quote!("abc"),
+            eq_token: parse_quote!(=),
+            value: parse_quote!(1 + 2),
+        };
+        assert_eq_ts(s, ts.clone());
+
+        let s = TestStructBrace {
+            delimiter: delimiter.clone(),
+            key: parse_quote!("abc"),
+            eq_token: parse_quote!(=),
+            value: parse_quote!(1 + 2),
+        };
+        assert_eq_ts(s, ts.clone());
+
+        let s = TestStructBraket {
+            delimiter,
+            key: parse_quote!("abc"),
+            eq_token: parse_quote!(=),
+            value: parse_quote!(1 + 2),
+        };
+        assert_eq_ts(s, ts);
+    }
+    check(
+        syn::MacroDelimiter::Paren(Default::default()),
+        quote!(("abc" = 1 + 2)),
+    );
+    check(
+        syn::MacroDelimiter::Brace(Default::default()),
+        quote!({ "abc" = 1 + 2 }),
+    );
+    check(
+        syn::MacroDelimiter::Bracket(Default::default()),
+        quote!(["abc" = 1 + 2]),
+    );
+}
+
+#[test]
+fn macro_delimiter_close() {
+    #[derive(ToTokens)]
+    struct TestStructParen {
+        #[to_tokens("(")]
+        delimiter: syn::MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens(")")]
+        value: syn::Expr,
+    }
+    #[derive(ToTokens)]
+    struct TestStructBrace {
+        #[to_tokens("{")]
+        delimiter: syn::MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens("}")]
+        value: syn::Expr,
+    }
+    #[derive(ToTokens)]
+    struct TestStructBraket {
+        #[to_tokens("[")]
+        delimiter: syn::MacroDelimiter,
+        key: syn::LitStr,
+        eq_token: syn::Token![=],
+        #[to_tokens("]")]
+        value: syn::Expr,
+    }
+    fn check(delimiter: syn::MacroDelimiter, ts: TokenStream) {
+        let s = TestStructParen {
+            delimiter: delimiter.clone(),
+            key: parse_quote!("abc"),
+            eq_token: parse_quote!(=),
+            value: parse_quote!(1 + 2),
+        };
+        assert_eq_ts(s, ts.clone());
+
+        let s = TestStructBrace {
+            delimiter: delimiter.clone(),
+            key: parse_quote!("abc"),
+            eq_token: parse_quote!(=),
+            value: parse_quote!(1 + 2),
+        };
+        assert_eq_ts(s, ts.clone());
+
+        let s = TestStructBraket {
+            delimiter,
+            key: parse_quote!("abc"),
+            eq_token: parse_quote!(=),
+            value: parse_quote!(1 + 2),
+        };
+        assert_eq_ts(s, ts);
+    }
+    check(
+        syn::MacroDelimiter::Paren(Default::default()),
+        quote!(("abc" = ) 1 + 2),
+    );
+    check(
+        syn::MacroDelimiter::Brace(Default::default()),
+        quote!({ "abc" = } 1 + 2),
+    );
+    check(
+        syn::MacroDelimiter::Bracket(Default::default()),
+        quote!(["abc" = ] 1 + 2),
+    );
 }

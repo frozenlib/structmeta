@@ -1,8 +1,9 @@
-use proc_macro2::{Ident, Spacing, Span};
+use proc_macro2::{Ident, Spacing, Span, TokenStream};
 use syn::{
     ext::IdentExt,
     parse::{discouraged::Speculative, ParseStream},
-    token, Result, Token,
+    token::{self},
+    MacroDelimiter, Result, Token,
 };
 
 pub enum NameIndex {
@@ -213,6 +214,48 @@ fn distance(s0: &[char], s1: &[char]) -> Option<usize> {
 pub fn is_snake_case(s: &str) -> bool {
     s.chars()
         .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+}
+
+pub trait Surround {
+    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
+    where
+        F: FnOnce(&mut TokenStream);
+}
+impl Surround for token::Paren {
+    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
+    where
+        F: FnOnce(&mut TokenStream),
+    {
+        Self::surround(self, tokens, f)
+    }
+}
+impl Surround for token::Bracket {
+    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
+    where
+        F: FnOnce(&mut TokenStream),
+    {
+        Self::surround(self, tokens, f)
+    }
+}
+impl Surround for token::Brace {
+    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
+    where
+        F: FnOnce(&mut TokenStream),
+    {
+        Self::surround(self, tokens, f)
+    }
+}
+impl Surround for MacroDelimiter {
+    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
+    where
+        F: FnOnce(&mut TokenStream),
+    {
+        match self {
+            MacroDelimiter::Paren(p) => p.surround(tokens, f),
+            MacroDelimiter::Bracket(b) => b.surround(tokens, f),
+            MacroDelimiter::Brace(b) => b.surround(tokens, f),
+        }
+    }
 }
 
 #[test]
