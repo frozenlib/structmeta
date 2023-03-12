@@ -218,45 +218,14 @@ pub fn is_snake_case(s: &str) -> bool {
         .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
 }
 
-pub trait Surround {
-    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-    where
-        F: FnOnce(&mut TokenStream);
-}
-impl Surround for token::Paren {
-    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-    where
-        F: FnOnce(&mut TokenStream),
-    {
-        Self::surround(self, tokens, f)
-    }
-}
-impl Surround for token::Bracket {
-    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-    where
-        F: FnOnce(&mut TokenStream),
-    {
-        Self::surround(self, tokens, f)
-    }
-}
-impl Surround for token::Brace {
-    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-    where
-        F: FnOnce(&mut TokenStream),
-    {
-        Self::surround(self, tokens, f)
-    }
-}
-impl Surround for MacroDelimiter {
-    fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-    where
-        F: FnOnce(&mut TokenStream),
-    {
-        match self {
-            MacroDelimiter::Paren(p) => p.surround(tokens, f),
-            MacroDelimiter::Bracket(b) => b.surround(tokens, f),
-            MacroDelimiter::Brace(b) => b.surround(tokens, f),
-        }
+pub fn surround_macro_delimiter<F>(this: &MacroDelimiter, tokens: &mut TokenStream, f: F)
+where
+    F: FnOnce(&mut TokenStream),
+{
+    match this {
+        MacroDelimiter::Paren(p) => p.surround(tokens, f),
+        MacroDelimiter::Bracket(b) => b.surround(tokens, f),
+        MacroDelimiter::Brace(b) => b.surround(tokens, f),
     }
 }
 

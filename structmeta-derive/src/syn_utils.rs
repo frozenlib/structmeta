@@ -102,3 +102,8 @@ pub fn is_match_ns(ss: &Punctuated<PathSegment, Token![::]>, ns: &[&str]) -> boo
     }
     i_ss == 0
 }
+pub const NS_SYN: &[&[&str]] = &[&["syn"]];
+
+pub fn is_macro_delimiter(ty: &Type) -> bool {
+    is_type(ty, NS_SYN, "MacroDelimiter")
+}
