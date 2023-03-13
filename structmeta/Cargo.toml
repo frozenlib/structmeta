@@ -17,7 +17,7 @@ edition = "2021"
 structmeta-derive = { version = "=0.1.5", path = "../structmeta-derive" }
 proc-macro2 = "1.0.52"
 syn = "1.0.109"
-quote = "1.0.25"
+quote = "1.0.24"
 
 
 [dev-dependencies]
