@@ -15,10 +15,10 @@ edition = "2021"
 
 [dependencies]
 structmeta-derive = { version = "=0.1.5", path = "../structmeta-derive" }
-proc-macro2 = "1.0.33"
-syn = "1.0.82"
-quote = "1.0.10"
+proc-macro2 = "1.0.52"
+syn = "1.0.109"
+quote = "1.0.25"
 
 
 [dev-dependencies]
-syn = { version = "1.0.82", features = ["extra-traits", "full"] }
+syn = { version = "1.0.109", features = ["extra-traits", "full"] }

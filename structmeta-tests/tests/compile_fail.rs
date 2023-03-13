@@ -43,7 +43,8 @@ fn update_stderr_files(path: &str) -> Result<()> {
     let manifest_dir = var("CARGO_MANIFEST_DIR")?;
     let manifest_dir = Path::new(&manifest_dir);
     let root_dir = manifest_dir.parent().unwrap();
-    let cargo_lock: CargoLockRoot = toml::from_slice(&fs::read(root_dir.join("Cargo.lock"))?)?;
+    let cargo_lock: CargoLockRoot =
+        toml::from_str(str::from_utf8(&fs::read(root_dir.join("Cargo.lock"))?)?)?;
     let syn_version = cargo_lock.get_version_of("syn");
 
     let path = manifest_dir.join(path);
