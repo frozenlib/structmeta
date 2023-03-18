@@ -245,6 +245,7 @@ pub fn parse_macro_delimiter<'a>(
     Ok((token, content))
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! helpers_parse_macro_delimiter {
     ($content:ident in $input:ident) => {
