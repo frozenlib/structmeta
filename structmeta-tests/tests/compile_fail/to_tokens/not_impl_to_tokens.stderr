@@ -13,4 +13,4 @@ error[E0277]: the trait bound `X: ToTokens` is not satisfied
             Rc<T>
             RepInterp<T>
             String
-          and 309 others
+          and $N others

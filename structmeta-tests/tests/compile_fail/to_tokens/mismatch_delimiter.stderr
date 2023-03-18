@@ -9,13 +9,12 @@ error[E0308]: mismatched types
   = note: expected reference `&syn::token::Paren`
              found reference `&syn::token::Bracket`
 note: associated function defined here
- --> $CARGO/syn-1.0.109/src/token.rs
+ --> $CARGO/syn-2.0.0/src/token.rs
   |
   | / define_delimiters! {
-  | |     "{"           pub struct Brace        /// `{...}`
-  | |     "["           pub struct Bracket      /// `[...]`
-  | |     "("           pub struct Paren        /// `(...)`
-  | |     " "           pub struct Group        /// None-delimited group
+  | |     Brace         pub struct Brace        /// `{`&hellip;`}`
+  | |     Bracket       pub struct Bracket      /// `[`&hellip;`]`
+  | |     Parenthesis   pub struct Paren        /// `(`&hellip;`)`
   | | }
   | |_^
   = note: this error originates in the macro `define_delimiters` (in Nightly builds, run with -Z macro-backtrace for more info)

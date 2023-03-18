@@ -1,21 +1,21 @@
 error[E0277]: the trait bound `NotParse: Parse` is not satisfied
-   --> tests/compile_fail/struct_meta/not_parse.rs:3:16
-    |
-3   |     not_parse: NotParse,
-    |                ^^^^^^^^ the trait `Parse` is not implemented for `NotParse`
-    |
-    = help: the following other types implement trait `Parse`:
-              Abi
-              Abstract
-              AndAnd
-              AndEq
-              AngleBracketedGenericArguments
-              Arm
-              As
-              At
-            and 251 others
+ --> tests/compile_fail/struct_meta/not_parse.rs:3:16
+  |
+3 |     not_parse: NotParse,
+  |                ^^^^^^^^ the trait `Parse` is not implemented for `NotParse`
+  |
+  = help: the following other types implement trait `Parse`:
+            Abi
+            Abstract
+            AndAnd
+            AndEq
+            AngleBracketedGenericArguments
+            Arm
+            As
+            At
+          and $N others
 note: required by a bound in `ParseBuffer::<'a>::parse`
-   --> $CARGO/syn-1.0.109/src/parse.rs
-    |
-    |     pub fn parse<T: Parse>(&self) -> Result<T> {
-    |                     ^^^^^ required by this bound in `ParseBuffer::<'a>::parse`
+ --> $CARGO/syn-2.0.0/src/parse.rs
+  |
+  |     pub fn parse<T: Parse>(&self) -> Result<T> {
+  |                     ^^^^^ required by this bound in `ParseBuffer::<'a>::parse`

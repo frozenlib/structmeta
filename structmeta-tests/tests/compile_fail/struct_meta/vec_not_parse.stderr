@@ -15,7 +15,7 @@ error[E0277]: the trait bound `NotParse: Parse` is not satisfied
             At
           and $N others
 note: required by a bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
- --> $CARGO/syn-1.0.109/src/punctuated.rs
+ --> $CARGO/syn-2.0.0/src/punctuated.rs
   |
   |         T: Parse,
   |            ^^^^^ required by this bound in `Punctuated::<T, P>::parse_terminated`
