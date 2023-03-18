@@ -3,10 +3,8 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::unreachable;
 use syn::{
-    parenthesized,
     parse::{Parse, ParseStream},
-    parse2, parse_quote,
-    punctuated::Punctuated,
+    parse_quote,
     spanned::Spanned,
     Data, DataEnum, DataStruct, DeriveInput, Fields, Ident, Result, Token,
 };
@@ -14,8 +12,8 @@ use syn::{
 pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
     let mut dump = false;
     for attr in &input.attrs {
-        if attr.path.is_ident("parse") {
-            let attr: ParseAttribute = parse2(attr.tokens.clone())?;
+        if attr.path().is_ident("parse") {
+            let attr: ParseAttribute = attr.parse_args()?;
             dump = dump || attr.dump.is_some();
         }
     }
@@ -150,8 +148,8 @@ fn code_from_fields(
         let mut is_terminated = false;
         let mut is_root = scopes.len() == 1;
         for attr in &field.attrs {
-            if attr.path.is_ident("to_tokens") {
-                let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
+            if attr.path().is_ident("to_tokens") {
+                let attr: ToTokensAttribute = attr.parse_args()?;
                 for token in attr.token {
                     for c in token.value().chars() {
                         match c {
@@ -201,8 +199,8 @@ fn code_from_fields(
                     }
                 }
             }
-            if attr.path.is_ident("parse") {
-                let attr: ParseAttribute = parse2(attr.tokens.clone())?;
+            if attr.path().is_ident("parse") {
+                let attr: ParseAttribute = attr.parse_args()?;
                 peek = peek.or(attr.peek);
                 is_any = is_any || attr.any.is_some();
                 is_terminated = is_terminated || attr.terminated.is_some();
@@ -288,14 +286,11 @@ struct ParseAttribute {
 }
 impl Parse for ParseAttribute {
     fn parse(input: ParseStream) -> Result<Self> {
-        let content;
-        parenthesized!(content in input);
         let mut any = None;
         let mut peek = None;
         let mut terminated = None;
         let mut dump = None;
-        let args: Punctuated<ParseAttributeArg, Token![,]> =
-            content.parse_terminated(ParseAttributeArg::parse)?;
+        let args = input.parse_terminated(ParseAttributeArg::parse, Token![,])?;
         for arg in args.into_iter() {
             match arg {
                 ParseAttributeArg::Any(kw_any) => any = any.or(Some(kw_any)),

@@ -16,7 +16,7 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
     if let Data::Struct(data) = &input.data {
         let mut args = ArgsForStruct::default();
         for attr in &input.attrs {
-            if attr.path.is_ident("struct_meta") {
+            if attr.path().is_ident("struct_meta") {
                 args.parse_from_attr(attr)?;
             }
         }
@@ -268,7 +268,7 @@ impl<'a> Param<'a> {
         let mut name_specified = false;
         let mut unnamed = false;
         for attr in &field.attrs {
-            if attr.path.is_ident("struct_meta") {
+            if attr.path().is_ident("struct_meta") {
                 let a = attr.parse_args::<ArgsForField>()?;
                 if let Some(a_name) = a.name {
                     name = Some((a_name.value(), a_name.span()));

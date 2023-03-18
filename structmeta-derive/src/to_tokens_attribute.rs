@@ -1,7 +1,5 @@
 use proc_macro2::Span;
-use syn::{
-    parenthesized, parse::Parse, punctuated::Punctuated, spanned::Spanned, LitStr, Result, Token,
-};
+use syn::{parse::Parse, spanned::Spanned, LitStr, Result, Token};
 
 pub struct ToTokensAttribute {
     pub dump: Option<Span>,
@@ -9,10 +7,7 @@ pub struct ToTokensAttribute {
 }
 impl Parse for ToTokensAttribute {
     fn parse(input: syn::parse::ParseStream) -> Result<Self> {
-        let content;
-        parenthesized!(content in input);
-        let args: Punctuated<ToTokensAttributeArg, Token![,]> =
-            content.parse_terminated(ToTokensAttributeArg::parse)?;
+        let args = input.parse_terminated(ToTokensAttributeArg::parse, Token![,])?;
         let mut token = Vec::new();
         let mut dump = None;
         for arg in args.into_iter() {

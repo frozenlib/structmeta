@@ -10,6 +10,16 @@ Parse Rust's attribute arguments by defining a struct.
 
 See [`#[derive(StructMeta)]` documentation](https://docs.rs/structmeta/latest/structmeta/derive.StructMeta.html) for details.
 
+## Install
+
+Add this to your Cargo.toml:
+
+```toml
+[dependencies]
+structmeta = "0.2.0"
+syn = "2.0.0"
+```
+
 ## Example
 
 ```rust

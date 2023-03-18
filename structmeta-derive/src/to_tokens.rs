@@ -3,15 +3,14 @@ use proc_macro2::{Delimiter, Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::unreachable;
 use syn::{
-    parse2, parse_quote, spanned::Spanned, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
-    Result,
+    parse_quote, spanned::Spanned, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, Result,
 };
 
 pub fn derive_to_tokens(input: DeriveInput) -> Result<TokenStream> {
     let mut dump = false;
     for attr in &input.attrs {
-        if attr.path.is_ident("to_tokens") {
-            let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
+        if attr.path().is_ident("to_tokens") {
+            let attr: ToTokensAttribute = attr.parse_args()?;
             dump = dump || attr.dump.is_some();
         }
     }
@@ -168,8 +167,8 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
         let ident = to_var_ident(Some(index), &field.ident);
         let mut field_to_tokens = true;
         for attr in &field.attrs {
-            if attr.path.is_ident("to_tokens") {
-                let attr: ToTokensAttribute = parse2(attr.tokens.clone())?;
+            if attr.path().is_ident("to_tokens") {
+                let attr: ToTokensAttribute = attr.parse_args()?;
                 for token in &attr.token {
                     for c in token.value().chars() {
                         if let Some(delimiter) = delimiter_from_open_char(c) {

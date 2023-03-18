@@ -868,7 +868,7 @@ pub use structmeta_derive::Parse;
 ///     let input = parse_macro_input!(input as DeriveInput);
 ///     let mut msg = String::new();
 ///     for attr in input.attrs {
-///         if attr.path.is_ident("my_msg") {
+///         if attr.path().is_ident("my_msg") {
 ///             let attr = attr.parse_args::<MyAttr>().unwrap();
 ///             msg = attr.msg.value();
 ///         }
