@@ -13,11 +13,11 @@ proc-macro = true
 [dependencies]
 structmeta = { path = "../structmeta" }
 proc-macro2 = "1.0.52"
-syn = { version = "2.0.0", features = ["extra-traits", "full"] }
+syn = { version = "2.0.4", features = ["extra-traits", "full"] }
 quote = "1.0.26"
-trybuild = "1.0.79"
+trybuild = "1.0.80"
 toml = "0.7.3"
-serde = { version = "1.0.157", features = ["derive"] }
+serde = { version = "1.0.158", features = ["derive"] }
 anyhow = "1.0.70"
 ignore = "0.4.20"
-regex = "1.7.1"
+regex = "1.7.2"
