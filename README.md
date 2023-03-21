@@ -17,7 +17,7 @@ Add this to your Cargo.toml:
 ```toml
 [dependencies]
 structmeta = "0.2.0"
-syn = "2.0.0"
+syn = "2.0.4"
 ```
 
 ## Example
