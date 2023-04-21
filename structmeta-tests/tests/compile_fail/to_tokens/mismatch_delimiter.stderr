@@ -4,12 +4,12 @@ error[E0308]: mismatched types
 5 |     #[to_tokens("(")]
   |     - arguments to this function are incorrect
 6 |     braket_token: syn::token::Bracket,
-  |     ^^^^^^^^^^^^ expected struct `Paren`, found struct `Bracket`
+  |     ^^^^^^^^^^^^ expected `&Paren`, found `&Bracket`
   |
   = note: expected reference `&syn::token::Paren`
              found reference `&syn::token::Bracket`
-note: associated function defined here
- --> $CARGO/syn-2.0.0/src/token.rs
+note: method defined here
+ --> $CARGO/syn-2.0.4/src/token.rs
   |
   | / define_delimiters! {
   | |     Brace         pub struct Brace        /// `{`&hellip;`}`
