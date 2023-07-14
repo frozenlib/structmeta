@@ -17,5 +17,8 @@ error[E0277]: the trait bound `NotParse: Parse` is not satisfied
 note: required by a bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
  --> $CARGO/syn-2.0.4/src/punctuated.rs
   |
+  |     pub fn parse_terminated(input: ParseStream) -> Result<Self>
+  |            ---------------- required by a bound in this associated function
+  |     where
   |         T: Parse,
   |            ^^^^^ required by this bound in `Punctuated::<T, P>::parse_terminated`
