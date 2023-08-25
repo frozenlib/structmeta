@@ -5,14 +5,14 @@ error[E0277]: the trait bound `NotParse: Parse` is not satisfied
   |                ^^^^^^^^ the trait `Parse` is not implemented for `NotParse`
   |
   = help: the following other types implement trait `Parse`:
-            Abi
-            Abstract
-            AndAnd
-            AndEq
-            AngleBracketedGenericArguments
-            Arm
-            As
-            At
+            Example
+            std::boxed::Box<T>
+            TokenStream2
+            TokenTree
+            proc_macro2::Group
+            proc_macro2::Punct
+            proc_macro2::Ident
+            proc_macro2::Literal
           and $N others
 note: required by a bound in `ParseBuffer::<'a>::parse`
  --> $CARGO/syn-2.0.4/src/parse.rs
