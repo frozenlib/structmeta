@@ -1,5 +1,5 @@
-error: cannot find parameter `value` in this scope (help: a parameter with a similar name exists: `value`)
- --> $DIR/similar_name.rs:1:46
+error: cannot find parameter `vaue` in this scope (help: a parameter with a similar name exists: `value`)
+ --> tests/compile_fail/struct_meta/similar_name.rs:1:46
   |
-1 | #[structmeta_tests::attr_required_name_value(value = 10)]
+1 | #[structmeta_tests::attr_required_name_value(vaue = 10)]
   |                                              ^^^^
