@@ -1,7 +1,7 @@
 error[E0308]: mismatched types
  --> tests/compile_fail/parse/mismatch_delimiter_enum.rs:7:9
   |
-7 |         braket_token: syn::token::Bracket,
+7 |         bracket_token: syn::token::Bracket,
   |         ^^^^^^^^^^^^  ------------------- expected due to this
   |         |
   |         expected `Bracket`, found `Paren`

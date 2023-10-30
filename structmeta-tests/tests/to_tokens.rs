@@ -282,14 +282,14 @@ fn bracket_all() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("[")]
-        braket_token: syn::token::Bracket,
+        bracket_token: syn::token::Bracket,
         key: syn::LitStr,
         eq_token: syn::Token![=],
         value: syn::Expr,
     }
 
     let s = TestStruct {
-        braket_token: Default::default(),
+        bracket_token: Default::default(),
         key: parse_quote!("abc"),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
@@ -303,7 +303,7 @@ fn bracket_close() {
     #[derive(ToTokens)]
     struct TestStruct {
         #[to_tokens("[")]
-        braket_token: syn::token::Bracket,
+        bracket_token: syn::token::Bracket,
         key: syn::LitStr,
         eq_token: syn::Token![=],
         #[to_tokens("]")]
@@ -311,7 +311,7 @@ fn bracket_close() {
     }
 
     let s = TestStruct {
-        braket_token: Default::default(),
+        bracket_token: Default::default(),
         key: parse_quote!("abc"),
         eq_token: parse_quote!(=),
         value: parse_quote!(1 + 2),
@@ -339,7 +339,7 @@ fn macro_delimiter_all() {
         value: syn::Expr,
     }
     #[derive(ToTokens)]
-    struct TestStructBraket {
+    struct TestStructBracket {
         #[to_tokens("[")]
         delimiter: syn::MacroDelimiter,
         key: syn::LitStr,
@@ -364,7 +364,7 @@ fn macro_delimiter_all() {
         };
         assert_eq_ts(s, ts.clone());
 
-        let s = TestStructBraket {
+        let s = TestStructBracket {
             delimiter,
             key: parse_quote!("abc"),
             eq_token: parse_quote!(=),
@@ -407,7 +407,7 @@ fn macro_delimiter_close() {
         value: syn::Expr,
     }
     #[derive(ToTokens)]
-    struct TestStructBraket {
+    struct TestStructBracket {
         #[to_tokens("[")]
         delimiter: syn::MacroDelimiter,
         key: syn::LitStr,
@@ -432,7 +432,7 @@ fn macro_delimiter_close() {
         };
         assert_eq_ts(s, ts.clone());
 
-        let s = TestStructBraket {
+        let s = TestStructBracket {
             delimiter,
             key: parse_quote!("abc"),
             eq_token: parse_quote!(=),

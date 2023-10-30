@@ -29,7 +29,7 @@ impl CargoLockRoot {
                 return &p.version;
             }
         }
-        panic!("pakcage {package_name} not found.");
+        panic!("package {package_name} not found.");
     }
 }
 

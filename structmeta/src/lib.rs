@@ -77,7 +77,7 @@ pub use arg_types::*;
 ///
 /// # Helper attributes
 ///
-/// |                                                             | struct | enum | varaint | field |
+/// |                                                             | struct | enum | variant | field |
 /// | ----------------------------------------------------------- | ------ | ---- | ------- | ----- |
 /// | [`#[to_tokens("[")]`, `#[to_tokens("]")]`](#to_tokens-----) |        |      |         | ✔     |
 /// | [`#[to_tokens("(")]`, `#[to_tokens(")")]`](#to_tokens-----) |        |      |         | ✔     |
@@ -127,7 +127,7 @@ pub use arg_types::*;
 /// }
 /// ```
 ///
-/// If the field type is `Braket` or `Paren` or `Brace`, the symbol corresponding to the token type must be specified.
+/// If the field type is `Bracket` or `Paren` or `Brace`, the symbol corresponding to the token type must be specified.
 ///
 /// If the field type is `MacroDelimiter`, any symbol can be used and there is no difference in behavior. (Three types of parentheses are available, no matter which symbol is specified.)
 ///
@@ -222,7 +222,7 @@ pub use structmeta_derive::ToTokens;
 ///
 /// # Helper attributes
 ///
-/// |                                                                 | struct | enum | varaint | field |
+/// |                                                                 | struct | enum | variant | field |
 /// | --------------------------------------------------------------- | ------ | ---- | ------- | ----- |
 /// | [`#[to_tokens("[", "]", "(", ")", "{", "}")]`](#to_tokens-----) |        |      |         | ✔     |
 /// | [`#[parse(peek)]`](#parsepeek)                                  |        |      |         | ✔     |
@@ -279,7 +279,7 @@ pub use structmeta_derive::ToTokens;
 /// }
 /// ```
 ///
-/// If the field type is `Braket` or `Paren` or `Brace`, the symbol corresponding to the token type must be specified.
+/// If the field type is `Bracket` or `Paren` or `Brace`, the symbol corresponding to the token type must be specified.
 ///
 /// If the field type is `MacroDelimiter`, any symbol can be used and there is no difference in behavior. (Three types of parentheses are available, no matter which symbol is specified.)
 ///
@@ -360,7 +360,7 @@ pub use structmeta_derive::ToTokens;
 /// }
 /// ```
 ///
-/// To use `#[parse(peek)]` for a field that type is `Ident`, use `syn::Ident` insted of `proc_macro2::Ident`.
+/// To use `#[parse(peek)]` for a field that type is `Ident`, use `syn::Ident` instead of `proc_macro2::Ident`.
 ///
 /// ```compile_fail
 /// #[derive(structmeta::Parse)]

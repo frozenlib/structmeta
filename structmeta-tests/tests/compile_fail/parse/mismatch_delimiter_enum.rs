@@ -4,7 +4,7 @@ use syn::LitStr;
 enum TestType {
     A {
         #[to_tokens("(")]
-        braket_token: syn::token::Bracket,
+        bracket_token: syn::token::Bracket,
         str: LitStr,
     },
     B(LitStr),

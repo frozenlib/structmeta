@@ -111,14 +111,14 @@ fn test_tuple_optional_and_variadic() {
     );
 }
 #[test]
-fn test_tuple_requied_named() {
+fn test_tuple_required_named() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr(#[struct_meta(name = "abc")] LitStr);
     check(pq!(#[attr(abc = "def")]), Attr(pq!("def")));
 }
 
 #[test]
-fn test_tuple_requied_named_2() {
+fn test_tuple_required_named_2() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr(
         #[struct_meta(name = "a")] LitStr,

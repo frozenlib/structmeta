@@ -303,7 +303,7 @@ fn peek_bracket() {
         A {
             #[parse(peek)]
             #[to_tokens("[")]
-            braket_token: token::Bracket,
+            bracket_token: token::Bracket,
             eq_token: Token![=],
             #[to_tokens("]")]
             #[parse(peek)]
