@@ -2,7 +2,9 @@ error[E0277]: the trait bound `structmeta::Flag: Parse` is not satisfied
  --> tests/compile_fail/struct_meta/hash_map_flag.rs:6:27
   |
 6 |     rest: HashMap<String, Flag>,
-  |                           ^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
+  |     ----                  ^^^^ the trait `Parse` is not implemented for `structmeta::Flag`
+  |     |
+  |     required by a bound introduced by this call
   |
   = help: the following other types implement trait `Parse`:
             Example

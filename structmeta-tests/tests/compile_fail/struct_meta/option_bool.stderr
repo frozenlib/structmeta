@@ -2,7 +2,9 @@ error[E0277]: the trait bound `bool: Parse` is not satisfied
  --> tests/compile_fail/struct_meta/option_bool.rs:3:18
   |
 3 |     flag: Option<bool>,
-  |                  ^^^^ the trait `Parse` is not implemented for `bool`
+  |     ----         ^^^^ the trait `Parse` is not implemented for `bool`
+  |     |
+  |     required by a bound introduced by this call
   |
   = help: the following other types implement trait `Parse`:
             Example

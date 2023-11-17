@@ -2,7 +2,9 @@ error[E0277]: the trait bound `NotParse: Parse` is not satisfied
  --> tests/compile_fail/struct_meta/not_parse.rs:3:16
   |
 3 |     not_parse: NotParse,
-  |                ^^^^^^^^ the trait `Parse` is not implemented for `NotParse`
+  |     ---------  ^^^^^^^^ the trait `Parse` is not implemented for `NotParse`
+  |     |
+  |     required by a bound introduced by this call
   |
   = help: the following other types implement trait `Parse`:
             Example
