@@ -5,6 +5,7 @@ Derive [`syn::parse::Parse`] for parsing attribute arguments.
   - [Supported field types for named parameter](#supported-field-types-for-named-parameter)
   - [Flag style](#flag-style)
   - [NameValue style](#namevalue-style)
+  - [NameValue or Flag style](#namevalue-or-flag-style)
   - [NameArgs style](#nameargs-style)
   - [NameArgs or Flag style](#nameargs-or-flag-style)
   - [NameArgList style](#namearglist-style)
@@ -70,6 +71,7 @@ The following field will be "Named parameter".
 | ---------- | ---------------------------- | ------------------------------------------------- | ------------------------------- |
 | `bool`     | [`Flag`]                     | [Flag](#flag-style)                               | `name`                          |
 | `T`        | [`NameValue<T>`]             | [NameValue](#namevalue-style)                     | `name = value`                  |
+|            | [`NameValue<Option<T>>`]     | [NameValue or Flag](#namevalue-or-flag-style)     | `name = value` or `name`        |
 |            | [`NameArgs<T>`]              | [NameArgs](#nameargs-or-flag-style)               | `name(args)`                    |
 |            | [`NameArgs<Option<T>>`]      | [NameArgs or Flag](#nameargs-or-flag-style)       | `name(args)` or `name`          |
 | `Vec<T>`   | [`NameArgs<Vec<T>>`]         | [NameArgList](#namearglist-style)                 | `name(arg, arg, ...)`           |
@@ -150,6 +152,27 @@ assert_eq!(args.b.value.base10_parse::<u32>()?, 10);
 # syn::Result::Ok(())
 ```
 
+## NameValue or Flag style
+
+A field with type `NameArgs<Option<T>>` will be `name = value` or `name` style parameter.
+
+```rust
+use structmeta::{NameValue, StructMeta};
+use syn::{parse_quote, Attribute, LitInt, LitStr};
+
+#[derive(StructMeta)]
+struct Args {
+    a: NameValue<Option<LitStr>>,
+    b: NameValue<Option<LitInt>>,
+}
+
+let attr: Attribute = parse_quote!(#[attr(a, b = 10)]);
+let args: Args = attr.parse_args()?;
+assert!(args.a.value.is_none());
+assert_eq!(args.b.value.unwrap().base10_parse::<u32>()?, 10);
+# syn::Result::Ok(())
+```
+
 ## NameArgs style
 
 A field with type `NameArgs<T>` will be `name(args)` style parameter.
@@ -173,7 +196,7 @@ assert_eq!(args.b.args.base10_parse::<u32>()?, 10);
 
 ## NameArgs or Flag style
 
-A field with type `NameArgs<T>` will be `name(args)` or `name` style parameter.
+A field with type `NameArgs<Option<T>>` will be `name(args)` or `name` style parameter.
 
 ```rust
 use structmeta::{NameArgs, StructMeta};
