@@ -348,6 +348,21 @@ fn test_struct_name_args() {
 }
 
 #[test]
+fn test_struct_name_args_or_flag() {
+    #[derive(StructMeta, PartialEq, Debug)]
+    struct Attr {
+        a: NameArgs<Option<LitInt>>,
+    }
+    check(pq!(#[attr(a)]), Attr { a: name_args(None) });
+    check(
+        pq!(#[attr(a(1))]),
+        Attr {
+            a: name_args(Some(pq!(1))),
+        },
+    );
+}
+
+#[test]
 fn test_struct_map() {
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr {
