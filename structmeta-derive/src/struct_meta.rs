@@ -634,6 +634,7 @@ enum NamedParamType<'a> {
     },
     NameValue {
         ty: &'a Type,
+        is_option: bool,
     },
     NameArgs {
         ty: &'a Type,
@@ -648,8 +649,13 @@ impl<'a> NamedParamType<'a> {
             Self::Bool
         } else if may_flag && is_flag(ty) {
             Self::Flag
-        } else if let Some(ty) = get_name_value_element(ty) {
-            Self::NameValue { ty }
+        } else if let Some(mut ty) = get_name_value_element(ty) {
+            let mut is_option = false;
+            if let Some(e) = get_option_element(ty) {
+                is_option = true;
+                ty = e;
+            }
+            Self::NameValue { ty, is_option }
         } else if let Some(mut ty) = get_name_args_element(ty) {
             let mut is_option = false;
             if let Some(e) = get_option_element(ty) {
@@ -679,8 +685,9 @@ impl<'a> NamedParamType<'a> {
     fn is_flag(&self) -> bool {
         match self {
             NamedParamType::Bool | NamedParamType::Flag => true,
-            NamedParamType::Value { .. } | NamedParamType::NameValue { .. } => false,
-            NamedParamType::NameArgs { is_option, .. } => *is_option,
+            NamedParamType::Value { .. } => false,
+            NamedParamType::NameValue { is_option, .. }
+            | NamedParamType::NameArgs { is_option, .. } => *is_option,
         }
     }
     fn is_name_value(&self) -> bool {
@@ -709,8 +716,18 @@ impl<'a> NamedParamType<'a> {
                     build_parse_expr(ty, span)
                 }
             }
-            NamedParamType::NameValue { ty } => {
-                quote!(::structmeta::NameValue { name_span : span, value: input.parse::<#ty>()? })
+            NamedParamType::NameValue { ty, is_option } => {
+                let value = if kind == ArgKind::Flag && *is_option {
+                    quote!(None)
+                } else {
+                    let value = build_parse_expr(ty, span);
+                    if *is_option {
+                        quote!(Some(#value))
+                    } else {
+                        value
+                    }
+                };
+                quote!(::structmeta::NameValue { name_span : span, value: #value })
             }
             NamedParamType::NameArgs {
                 ty,
