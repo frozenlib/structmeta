@@ -26,11 +26,17 @@ pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
         }
     };
     let ts = quote! {
-        fn parse(input: #SYN::parse::ParseStream<'_>) -> #SYN::Result<Self> {
+        fn parse(input: ::structmeta::helpers::exports::syn::parse::ParseStream<'_>) -> ::structmeta::helpers::exports::syn::Result<Self> {
             #ts
         }
     };
-    let ts = impl_trait_result(&input, &parse_quote!(#SYN::parse::Parse), &[], ts, dump)?;
+    let ts = impl_trait_result(
+        &input,
+        &parse_quote!(::structmeta::helpers::exports::syn::parse::Parse),
+        &[],
+        ts,
+        dump,
+    )?;
     Ok(ts)
 }
 
@@ -57,7 +63,7 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
         )?;
         let fn_def = quote! {
             #[allow(non_snake_case)]
-            fn #fn_ident(input: #SYN::parse::ParseStream<'_>) -> #SYN::Result<#self_ident> {
+            fn #fn_ident(input: ::structmeta::helpers::exports::syn::parse::ParseStream<'_>) -> ::structmeta::helpers::exports::syn::Result<#self_ident> {
                 #fn_expr
             }
         };
@@ -72,7 +78,7 @@ fn code_from_enum(self_ident: &Ident, data: &DataEnum) -> Result<TokenStream> {
                 quote! {
                     let fork = input.fork();
                     if let Ok(value) = #fn_ident(&fork) {
-                        #SYN::parse::discouraged::Speculative::advance_to(input, &fork);
+                        ::structmeta::helpers::exports::syn::parse::discouraged::Speculative::advance_to(input, &fork);
                         return Ok(value);
                     }
                 }
@@ -159,7 +165,7 @@ fn code_from_fields(
                                     quote!(::structmeta::helpers_parse_macro_delimiter)
                                 } else {
                                     let parse_bracket = to_parse_bracket(c);
-                                    quote!(#SYN::#parse_bracket)
+                                    quote!(::structmeta::helpers::exports::syn::#parse_bracket)
                                 };
                                 let input_old = &scopes.last().unwrap().input;
                                 let input = format_ident!("input_{}", index);
@@ -233,13 +239,15 @@ fn code_from_fields(
         if use_parse {
             let input = &scopes.last().unwrap().input;
             let expr = match (is_terminated, is_any) {
-                (false, false) => quote!(#SYN::parse::Parse::parse(#input)),
+                (false, false) => {
+                    quote!(::structmeta::helpers::exports::syn::parse::Parse::parse(#input))
+                }
                 (false, true) => quote!(<#ty>::parse_any(#input)),
                 (true, false) => {
                     quote!(<#ty>::parse_terminated(#input))
                 }
                 (true, true) => {
-                    quote!(<#ty>::parse_terminated_with(#input, #SYN::ext::IdentExt::parse_any))
+                    quote!(<#ty>::parse_terminated_with(#input, ::structmeta::helpers::exports::syn::ext::IdentExt::parse_any))
                 }
             };
             let code = quote_spanned!(field.span()=>let #var_ident = #expr?;);

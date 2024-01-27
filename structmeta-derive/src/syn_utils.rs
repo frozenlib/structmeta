@@ -1,5 +1,5 @@
 use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::{
     punctuated::Punctuated, DeriveInput, Path, PathArguments, PathSegment, Result, Token, Type,
     WherePredicate,
@@ -107,18 +107,3 @@ pub const NS_SYN: &[&[&str]] = &[&["syn"]];
 pub fn is_macro_delimiter(ty: &Type) -> bool {
     is_type(ty, NS_SYN, "MacroDelimiter")
 }
-
-pub struct StaticTokenStream(pub fn() -> TokenStream);
-
-impl ToTokens for StaticTokenStream {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.extend((self.0)());
-    }
-}
-
-pub static SYN: StaticTokenStream =
-    StaticTokenStream(|| quote!(::structmeta::helpers::exports::syn));
-pub static PROC_MACRO2: StaticTokenStream =
-    StaticTokenStream(|| quote!(::structmeta::helpers::exports::proc_macro2));
-pub static QUOTE: StaticTokenStream =
-    StaticTokenStream(|| quote!(::structmeta::helpers::exports::quote));
