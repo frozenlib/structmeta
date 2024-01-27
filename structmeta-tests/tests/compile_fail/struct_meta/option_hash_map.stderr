@@ -9,8 +9,8 @@ error[E0277]: the trait bound `HashMap<String, LitInt>: Parse` is not satisfied
   = help: the following other types implement trait `Parse`:
             Example
             std::boxed::Box<T>
-            proc_macro2::TokenStream
-            proc_macro2::TokenTree
+            TokenStream
+            TokenTree
             proc_macro2::Group
             proc_macro2::Punct
             syn::Ident
