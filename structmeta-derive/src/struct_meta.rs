@@ -24,10 +24,10 @@ pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {
         let body = ps.build();
         impl_trait_result(
             &input,
-            &parse_quote!(::syn::parse::Parse),
+            &parse_quote!(#SYN::parse::Parse),
             &[],
             quote! {
-                fn parse(input: ::syn::parse::ParseStream<'_>) -> ::syn::Result<Self> {
+                fn parse(input: #SYN::parse::ParseStream<'_>) -> #SYN::Result<Self> {
                     #body
                 }
             },
@@ -115,9 +115,9 @@ impl<'a> Params<'a> {
                 );
                 ts.extend(quote! {
                     if input.is_empty () {
-                        return Err(::syn::Error::new(input.span(), #msg));
+                        return Err(#SYN::Error::new(input.span(), #msg));
                     }
-                    input.parse::<::syn::Token![,]>()?;
+                    input.parse::<#SYN::Token![,]>()?;
                 });
             }
             is_next = true;
@@ -213,7 +213,7 @@ impl<'a> Params<'a> {
             let mut named_used = false;
             while !input.is_empty() {
                 if is_next {
-                    input.parse::<::syn::Token![,]>()?;
+                    input.parse::<#SYN::Token![,]>()?;
                     if input.is_empty() {
                         break;
                     }
@@ -400,7 +400,7 @@ impl<'a> NamedParam<'a> {
         quote_spanned! { span=>
             ::structmeta::helpers::NameIndex::#var(Ok(#index)) => {
                 if #temp_ident.is_some() {
-                    return Err(::syn::Error::new(span, #msg));
+                    return Err(#SYN::Error::new(span, #msg));
                 }
                 #temp_ident = Some(#expr);
             }
@@ -419,11 +419,11 @@ impl<'a> NamedParam<'a> {
                 NamedParamType::Bool => quote!(#temp_ident.is_some()),
                 NamedParamType::Value { .. } | NamedParamType::NameValue { .. } => {
                     let msg = format!("missing argument `{} = ...`", self.name);
-                    quote!(#temp_ident.ok_or_else(|| ::syn::Error::new(::proc_macro2::Span::call_site(), #msg))?)
+                    quote!(#temp_ident.ok_or_else(|| #SYN::Error::new(#PROC_MACRO2::Span::call_site(), #msg))?)
                 }
                 NamedParamType::NameArgs { .. } => {
                     let msg = format!("missing argument `{}(...)`", self.name);
-                    quote!(#temp_ident.ok_or_else(|| ::syn::Error::new(::proc_macro2::Span::call_site(), #msg))?)
+                    quote!(#temp_ident.ok_or_else(|| #SYN::Error::new(#PROC_MACRO2::Span::call_site(), #msg))?)
                 }
             }
         };
@@ -443,7 +443,7 @@ impl<'a> RestParam<'a> {
         quote_spanned! { span=>
             ::structmeta::helpers::NameIndex::#var(Err(name)) => {
                 if #temp_ident.insert(name.to_string(), #expr).is_some() {
-                    return Err(::syn::Error::new(span, format!("parameter `{}` specified more than once", name)));
+                    return Err(#SYN::Error::new(span, format!("parameter `{}` specified more than once", name)));
                 }
             }
         }
@@ -755,14 +755,14 @@ fn build_parse_expr(ty: &Type, span: Span) -> TokenStream {
 }
 fn build_parse_expr_name_args(ty: &Type, is_vec: bool, span: Span) -> TokenStream {
     let value = if is_vec {
-        quote_spanned!(span=> ::syn::punctuated::Punctuated::<#ty, ::syn::Token![,]>::parse_terminated(&content)?.into_iter().collect())
+        quote_spanned!(span=> #SYN::punctuated::Punctuated::<#ty, #SYN::Token![,]>::parse_terminated(&content)?.into_iter().collect())
     } else {
         quote_spanned!(span=> content.parse::<#ty>()?)
     };
     quote! {
         {
             let content;
-            ::syn::parenthesized!(content in input);
+            #SYN::parenthesized!(content in input);
             #value
         }
     }

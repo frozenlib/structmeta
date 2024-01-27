@@ -23,11 +23,11 @@ pub fn derive_to_tokens(input: DeriveInput) -> Result<TokenStream> {
         }
     };
     let ts = quote! {
-        fn to_tokens(&self, tokens: &mut ::proc_macro2::TokenStream) {
+        fn to_tokens(&self, tokens: &mut #PROC_MACRO2::TokenStream) {
             #ts
         }
     };
-    let ts = impl_trait_result(&input, &parse_quote!(::quote::ToTokens), &[], ts, dump)?;
+    let ts = impl_trait_result(&input, &parse_quote!(#QUOTE::ToTokens), &[], ts, dump)?;
     Ok(ts)
 }
 fn code_from_struct(data: &DataStruct) -> Result<TokenStream> {
@@ -153,7 +153,7 @@ impl<'a> Scope<'a> {
                 quote_spanned!(span=> ::structmeta::helpers::surround_macro_delimiter)
             } else {
                 let ty = s.token_type_ident();
-                quote_spanned!(span=> ::syn::token::#ty::surround)
+                quote_spanned!(span=> #SYN::token::#ty::surround)
             };
             let code = quote_spanned!(span=> #func(#ident, tokens, |tokens| { #ts }););
             return Ok(code);
@@ -197,7 +197,7 @@ fn code_from_fields(fields: &Fields) -> Result<TokenStream> {
             }
         }
         if field_to_tokens {
-            let code = quote_spanned!(field.span()=> ::quote::ToTokens::to_tokens(#ident, tokens););
+            let code = quote_spanned!(field.span()=> #QUOTE::ToTokens::to_tokens(#ident, tokens););
             scopes.last_mut().unwrap().ts.extend(code);
         }
     }

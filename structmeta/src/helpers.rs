@@ -8,6 +8,12 @@ use syn::{
     MacroDelimiter, Result, Token,
 };
 
+pub mod exports {
+    pub use proc_macro2;
+    pub use quote;
+    pub use syn;
+}
+
 pub enum NameIndex {
     Flag(std::result::Result<usize, Ident>),
     NameValue(std::result::Result<usize, Ident>),
