@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Rustup update stable
         run: rustup update stable
       - name: Show cargo version
@@ -27,11 +27,11 @@ jobs:
         run: cargo clippy --all-features --tests --lib -- -W clippy::all
         env:
           RUSTFLAGS: -D warnings
-      - name: Clean 
+      - name: Clean
         run: cargo clean
       - name: Run tests structmeta-derive
         run: cargo test -p structmeta-derive
-      - name: Clean 
+      - name: Clean
         run: cargo clean
       - name: Run tests structmeta
         run: cargo test -p structmeta
