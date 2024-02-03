@@ -16,10 +16,10 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-structmeta = "0.2.0"
-syn = "2.0.4"
-proc-macro2 = "1.0.52"
-quote = "1.0.26"
+structmeta = "0.3.0"
+proc-macro2 = "1.0.78"
+syn = "2.0.48"
+quote = "1.0.35"
 ```
 
 ## Example
