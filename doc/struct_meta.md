@@ -77,7 +77,7 @@ The following field will be "Named parameter".
 | `Vec<T>`   | [`NameArgs<Vec<T>>`]         | [NameArgList](#namearglist-style)                 | `name(arg, arg, ...)`           |
 |            | [`NameArgs<Option<Vec<T>>>`] | [NameArgList or Flag](#namearglist-or-flag-style) | `name(arg, arg, ...)` or `name` |
 
-Note: the type `T` in the table above needs to implement `syn::parse::Parse`.
+Note: the type `T` in the table above needs to implement [`syn::parse::Parse`].
 
 With the above type as P (`bool` and `Flag` are excluded), you can also use the following types.
 
@@ -341,11 +341,11 @@ The following field will be "Unnamed parameter".
 | `Option<T>` | [optional parameter](#optional-unnamed-parameter) |
 | `Vec<T>`    | [variadic parameter](#variadic-unnamed-parameter) |
 
-The type `T` in the table above needs to implement `syn::parse::Parse`.
+The type `T` in the table above needs to implement [`syn::parse::Parse`].
 
 ## Required unnamed parameter
 
-Fields of the type that implement `syn::parse::Parse` will be required parameters.
+Fields of the type that implement [`syn::parse::Parse`] will be required parameters.
 
 ```rust
 use structmeta::StructMeta;
