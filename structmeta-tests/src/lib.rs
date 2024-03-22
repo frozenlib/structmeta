@@ -32,7 +32,7 @@ pub fn my_attr(attr: TokenStream, _item: TokenStream) -> TokenStream {
 
 #[derive(Parse)]
 enum SingleVariant {
-    A(LitInt, LitStr),
+    A(#[allow(dead_code)] LitInt, #[allow(dead_code)] LitStr),
 }
 
 #[proc_macro]
@@ -45,7 +45,7 @@ pub fn parse_single_variant(input: TokenStream) -> TokenStream {
 }
 
 #[derive(StructMeta)]
-struct RequiredUnnamed2(LitInt, LitInt);
+struct RequiredUnnamed2(#[allow(dead_code)] LitInt, #[allow(dead_code)] LitInt);
 
 #[proc_macro_attribute]
 pub fn attr_required_unnamed2(attr: TokenStream, item: TokenStream) -> TokenStream {

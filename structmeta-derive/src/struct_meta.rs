@@ -549,7 +549,7 @@ impl ArgsForStruct {
 }
 
 enum ArgForStruct {
-    Dump(kw::dump),
+    Dump(#[allow(dead_code)]kw::dump),
     NameFilter { span: Span, value: NameFilter },
 }
 impl Parse for ArgForStruct {
