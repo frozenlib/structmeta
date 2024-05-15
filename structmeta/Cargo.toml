@@ -10,6 +10,7 @@ keywords = ["derive", "parse", "attribute", "syn", "totokens"]
 categories = ["development-tools::procedural-macro-helpers"]
 description = "Parse Rust's attribute arguments by defining a struct."
 edition = "2021"
+rust-version = "1.70.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

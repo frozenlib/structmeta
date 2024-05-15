@@ -43,3 +43,5 @@ jobs:
         run: cargo +stable test --verbose --no-run
       - name: Run tests (minimal versions)
         run: cargo +stable test --verbose
+      - name: Check msrv
+        run: cargo hack check --rust-version --workspace --all-targets --ignore-private
