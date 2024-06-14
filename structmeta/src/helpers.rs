@@ -165,7 +165,7 @@ fn find_similar_name<'a>(names: &[&[&'a str]], ident: &Ident) -> Option<&'a str>
     let c0: Vec<_> = ident.to_string().chars().collect();
     let mut c1 = Vec::new();
     let mut r = None;
-    let mut r_d = usize::max_value();
+    let mut r_d = usize::MAX;
     for &names in names {
         for &name in names {
             c1.clear();
