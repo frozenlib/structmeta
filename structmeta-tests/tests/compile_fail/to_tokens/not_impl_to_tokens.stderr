@@ -5,12 +5,12 @@ error[E0277]: the trait bound `X: ToTokens` is not satisfied
   |     ^ the trait `ToTokens` is not implemented for `X`
   |
   = help: the following other types implement trait `ToTokens`:
-            bool
-            char
-            isize
-            i8
-            i16
-            i32
-            i64
-            i128
+            &'a T
+            &'a mut T
+            Abstract
+            AndAnd
+            AndEq
+            AngleBracketedGenericArguments
+            Arm
+            As
           and $N others

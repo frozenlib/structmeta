@@ -9,7 +9,7 @@ error[E0308]: mismatched types
   = note: expected reference `&syn::token::Paren`
              found reference `&syn::token::Bracket`
 note: method defined here
- --> $CARGO/syn-2.0.29/src/token.rs
+ --> $CARGO/syn-2.0.48/src/token.rs
   |
   | / define_delimiters! {
   | |     Brace         pub struct Brace        /// `{`&hellip;`}`
