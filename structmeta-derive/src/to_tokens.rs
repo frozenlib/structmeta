@@ -127,7 +127,7 @@ fn close_char_of(delimiter: Delimiter) -> char {
         _ => unreachable!("unsupported delimiter"),
     }
 }
-impl<'a> Surround<'a> {
+impl Surround<'_> {
     fn token_type_ident(&self) -> Ident {
         match self.delimiter {
             Delimiter::Bracket => parse_quote!(Bracket),
@@ -138,7 +138,7 @@ impl<'a> Surround<'a> {
     }
 }
 
-impl<'a> Scope<'a> {
+impl Scope<'_> {
     fn into_code(self, delimiter: Option<Delimiter>, span: Span) -> Result<TokenStream> {
         if let Some(s) = self.surround {
             if let Some(delimiter) = delimiter {

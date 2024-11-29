@@ -386,7 +386,7 @@ struct UnnamedParam<'a> {
     is_option: bool,
     is_vec: bool,
 }
-impl<'a> NamedParam<'a> {
+impl NamedParam<'_> {
     fn build_let(&self) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         quote!(let mut #temp_ident = None;)
@@ -430,7 +430,7 @@ impl<'a> NamedParam<'a> {
         build_ctor_arg(&self.info, value, ctor_args)
     }
 }
-impl<'a> RestParam<'a> {
+impl RestParam<'_> {
     fn build_let(&self) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         quote!(let mut #temp_ident = ::std::collections::HashMap::new();)
@@ -453,7 +453,7 @@ impl<'a> RestParam<'a> {
         build_ctor_arg(&self.info, quote!(#temp_ident), ctor_args)
     }
 }
-impl<'a> UnnamedParam<'a> {
+impl UnnamedParam<'_> {
     fn build_arm_parse_value(&self, index: usize) -> TokenStream {
         let temp_ident = &self.info.temp_ident;
         let span = self.info.field.span();
@@ -549,7 +549,7 @@ impl ArgsForStruct {
 }
 
 enum ArgForStruct {
-    Dump(#[allow(dead_code)]kw::dump),
+    Dump(#[allow(dead_code)] kw::dump),
     NameFilter { span: Span, value: NameFilter },
 }
 impl Parse for ArgForStruct {
