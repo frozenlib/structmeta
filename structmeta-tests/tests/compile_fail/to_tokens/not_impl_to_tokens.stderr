@@ -5,8 +5,8 @@ error[E0277]: the trait bound `X: ToTokens` is not satisfied
   |     ^ the trait `ToTokens` is not implemented for `X`
   |
   = help: the following other types implement trait `ToTokens`:
-            &'a T
-            &'a mut T
+            &T
+            &mut T
             Abstract
             AndAnd
             AndEq
