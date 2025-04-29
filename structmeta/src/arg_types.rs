@@ -1,3 +1,5 @@
+use std::ops::{BitOr, BitOrAssign};
+
 use proc_macro2::Span;
 /// `name` style attribute argument.
 ///
@@ -22,6 +24,19 @@ impl From<bool> for Flag {
         Self {
             span: if value { Some(Span::call_site()) } else { None },
         }
+    }
+}
+impl BitOr for Flag {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self {
+            span: self.span.or(rhs.span),
+        }
+    }
+}
+impl BitOrAssign for Flag {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.span = self.span.or(rhs.span);
     }
 }
 
