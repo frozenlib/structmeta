@@ -468,7 +468,7 @@ impl UnnamedParam<'_> {
         let temp_ident = &self.info.temp_ident;
         let span = self.info.field.span();
         let expr = build_parse_expr(self.ty, span);
-        quote_spanned! { self.info.field.span()=>
+        quote_spanned! { span=>
             _ => {
                 #temp_ident.push(#expr);
             }
