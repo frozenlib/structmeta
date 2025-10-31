@@ -2,8 +2,13 @@ error[E0277]: the trait bound `X: ToTokens` is not satisfied
  --> tests/compile_fail/to_tokens/not_impl_to_tokens.rs:4:5
   |
 4 |     x: X,
-  |     ^ the trait `ToTokens` is not implemented for `X`
+  |     ^ unsatisfied trait bound
   |
+help: the trait `ToTokens` is not implemented for `X`
+ --> tests/compile_fail/to_tokens/not_impl_to_tokens.rs:7:1
+  |
+7 | struct X;
+  | ^^^^^^^^
   = help: the following other types implement trait `ToTokens`:
             &T
             &mut T
