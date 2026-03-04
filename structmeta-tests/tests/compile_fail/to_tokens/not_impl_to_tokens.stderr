@@ -16,6 +16,6 @@ help: the trait `ToTokens` is not implemented for `X`
             AndAnd
             AndEq
             AngleBracketedGenericArguments
+            Arc<T>
             Arm
-            As
           and $N others
