@@ -9,12 +9,15 @@ error[E0308]: mismatched types
   = note: expected reference `&syn::token::Paren`
              found reference `&syn::token::Bracket`
 note: method defined here
- --> $CARGO/syn-2.0.117/src/token.rs
+ --> $CARGO/syn-$VERSION/src/token.rs
   |
+  |                   pub fn surround<F>(&self, tokens: &mut TokenStream, f: F)
+  |                          ^^^^^^^^
+...
   | / define_delimiters! {
   | |     Brace         pub struct Brace        /// `{`&hellip;`}`
   | |     Bracket       pub struct Bracket      /// `[`&hellip;`]`
   | |     Parenthesis   pub struct Paren        /// `(`&hellip;`)`
   | | }
-  | |_^
+  | |_- in this macro invocation
   = note: this error originates in the macro `define_delimiters` (in Nightly builds, run with -Z macro-backtrace for more info)
