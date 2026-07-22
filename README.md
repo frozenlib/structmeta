@@ -16,9 +16,9 @@ Add this to your Cargo.toml:
 
 ```toml
 [dependencies]
-structmeta = "0.3.0"
+structmeta = "0.4.0"
 proc-macro2 = "1.0.78"
-syn = "2.0.48"
+syn = "3.0.0"
 quote = "1.0.35"
 ```
 

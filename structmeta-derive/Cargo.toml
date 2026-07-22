@@ -1,6 +1,6 @@
 [package]
 name = "structmeta-derive"
-version = "0.3.0"
+version.workspace = true
 authors = ["frozenlib"]
 license = "MIT OR Apache-2.0"
 readme = "../README.md"
