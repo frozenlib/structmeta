@@ -1,3 +1,7 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = ["structmeta", "structmeta-derive", "structmeta-tests"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85.0"

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use ignore::Walk;
 use regex::Regex;
 use serde::Deserialize;
 use std::{
@@ -40,6 +39,19 @@ struct CargoLockPackage {
 }
 
 fn update_stderr_files(path: &str) -> Result<()> {
+    fn visit_stderr_files(path: &Path, syn_version: &str) -> Result<()> {
+        for entry in fs::read_dir(path)? {
+            let entry = entry?;
+            let file_type = entry.file_type()?;
+            if file_type.is_dir() {
+                visit_stderr_files(&entry.path(), syn_version)?;
+            } else if file_type.is_file() && entry.path().extension() == Some(OsStr::new("stderr")) {
+                fix_file(&entry.path(), syn_version)?;
+            }
+        }
+        Ok(())
+    }
+
     let manifest_dir = var("CARGO_MANIFEST_DIR")?;
     let manifest_dir = Path::new(&manifest_dir);
     let root_dir = manifest_dir.parent().unwrap();
@@ -48,15 +60,7 @@ fn update_stderr_files(path: &str) -> Result<()> {
     let syn_version = cargo_lock.get_version_of("syn");
 
     let path = manifest_dir.join(path);
-    for i in Walk::new(path) {
-        let i = i?;
-        if let Some(file_type) = i.file_type() {
-            if file_type.is_file() && i.path().extension() == Some(OsStr::new("stderr")) {
-                fix_file(i.path(), syn_version)?;
-            }
-        }
-    }
-    Ok(())
+    visit_stderr_files(&path, syn_version)
 }
 fn fix_file(path: &Path, syn_version: &str) -> Result<()> {
     let re = Regex::new(r"--> \$CARGO/syn-([0-9]+.[0-9]+.[0-9]+)/")?;
