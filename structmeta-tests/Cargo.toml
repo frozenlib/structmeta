@@ -13,9 +13,9 @@ proc-macro = true
 
 [dependencies]
 structmeta = { path = "../structmeta" }
-proc-macro2 = "1.0.78"
-syn = { version = "3.0.0", features = ["extra-traits", "full"] }
-quote = "1.0.35"
+proc-macro2.workspace = true
+syn = { workspace = true, features = ["extra-traits", "full"] }
+quote.workspace = true
 trybuild = "1.0.89"
 toml = "0.8.8"
 serde = { version = "1.0.196", features = ["derive"] }

@@ -5,3 +5,8 @@ members = ["structmeta", "structmeta-derive", "structmeta-tests"]
 [workspace.package]
 edition = "2024"
 rust-version = "1.85.0"
+
+[workspace.dependencies]
+proc-macro2 = "1.0.78"
+syn = "3.0.0"
+quote = "1.0.35"

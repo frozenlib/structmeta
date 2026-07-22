@@ -16,10 +16,10 @@ rust-version.workspace = true
 
 [dependencies]
 structmeta-derive = { version = "=0.3.0", path = "../structmeta-derive" }
-proc-macro2 = "1.0.78"
-syn = "3.0.0"
-quote = "1.0.35"
+proc-macro2.workspace = true
+syn.workspace = true
+quote.workspace = true
 
 
 [dev-dependencies]
-syn = { version = "3.0.0", features = ["extra-traits", "full"] }
+syn = { workspace = true, features = ["extra-traits", "full"] }
