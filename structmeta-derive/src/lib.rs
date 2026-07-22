@@ -9,7 +9,7 @@ mod struct_meta;
 mod to_tokens;
 mod to_tokens_attribute;
 
-use syn::{parse_macro_input, DeriveInput};
+use syn::{DeriveInput, parse_macro_input};
 use syn_utils::*;
 
 #[proc_macro_derive(ToTokens, attributes(to_tokens))]

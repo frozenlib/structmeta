@@ -3,10 +3,10 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::unreachable;
 use syn::{
+    Data, DataEnum, DataStruct, DeriveInput, Fields, Ident, Result, Token,
     parse::{Parse, ParseStream},
     parse_quote,
     spanned::Spanned,
-    Data, DataEnum, DataStruct, DeriveInput, Fields, Ident, Result, Token,
 };
 
 pub fn derive_parse(input: DeriveInput) -> Result<TokenStream> {
@@ -216,14 +216,17 @@ fn code_from_fields(
             if let Some(peek) = peek {
                 let span = peek.span();
                 if !is_root {
-                    bail!(span, "`#[parse(peek)]` cannot be specified with a field enclosed by `[]`, `()` or `{}`.");
+                    bail!(
+                        span,
+                        "`#[parse(peek)]` cannot be specified with a field enclosed by `[]`, `()` or `{}`."
+                    );
                 }
                 if let Some(non_peek_field) = &non_peek_field {
                     bail!(
-                            span,
-                            "you need to peek all previous tokens. consider specifying `#[parse(peek)]` for field `{}`.",
-                            non_peek_field
-                        );
+                        span,
+                        "you need to peek all previous tokens. consider specifying `#[parse(peek)]` for field `{}`.",
+                        non_peek_field
+                    );
                 }
                 let arg = if is_any {
                     quote!(#ty::peek_any)

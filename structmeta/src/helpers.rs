@@ -1,11 +1,10 @@
 use proc_macro2::{Ident, Spacing, Span, TokenStream};
 use syn::{
-    braced, bracketed,
+    MacroDelimiter, Result, Token, braced, bracketed,
     ext::IdentExt,
     parenthesized,
-    parse::{discouraged::Speculative, ParseBuffer, ParseStream},
+    parse::{ParseBuffer, ParseStream, discouraged::Speculative},
     token::{self},
-    MacroDelimiter, Result, Token,
 };
 
 pub mod exports {

@@ -1,9 +1,9 @@
 mod test_utils;
 
 use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use structmeta::{Parse, ToTokens};
-use syn::{parse::Parse, punctuated::Punctuated, token, Expr, LitInt, LitStr, Token};
+use syn::{Expr, LitInt, LitStr, Token, parse::Parse, punctuated::Punctuated, token};
 use syn::{Ident, MacroDelimiter};
 use test_utils::*;
 

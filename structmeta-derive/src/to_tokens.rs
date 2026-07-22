@@ -3,7 +3,7 @@ use proc_macro2::{Delimiter, Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::unreachable;
 use syn::{
-    parse_quote, spanned::Spanned, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, Result,
+    Data, DataEnum, DataStruct, DeriveInput, Field, Fields, Result, parse_quote, spanned::Spanned,
 };
 
 pub fn derive_to_tokens(input: DeriveInput) -> Result<TokenStream> {

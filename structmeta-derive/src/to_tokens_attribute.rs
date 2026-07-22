@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use syn::{parse::Parse, spanned::Spanned, LitStr, Result, Token};
+use syn::{LitStr, Result, Token, parse::Parse, spanned::Spanned};
 
 pub struct ToTokensAttribute {
     pub dump: Option<Span>,

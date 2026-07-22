@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use proc_macro::TokenStream;
 use quote::quote;
 use structmeta::{NameArgs, NameValue, Parse, StructMeta};
-use syn::{parse, parse2, parse_macro_input, DeriveInput, LitInt, LitStr};
+use syn::{DeriveInput, LitInt, LitStr, parse, parse_macro_input, parse2};
 
 #[derive(StructMeta)]
 struct MyAttr {

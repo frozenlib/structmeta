@@ -3,13 +3,13 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
 use std::collections::BTreeMap;
 use syn::{
+    Attribute, Data, DeriveInput, Field, Fields, GenericArgument, Ident, LitStr, PathArguments,
+    Result, Token, Type,
     ext::IdentExt,
     parse::{Parse, ParseStream},
     parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
-    Attribute, Data, DeriveInput, Field, Fields, GenericArgument, Ident, LitStr, PathArguments,
-    Result, Token, Type,
 };
 
 pub fn derive_struct_meta(input: DeriveInput) -> Result<TokenStream> {

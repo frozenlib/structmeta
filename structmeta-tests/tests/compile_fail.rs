@@ -45,7 +45,8 @@ fn update_stderr_files(path: &str) -> Result<()> {
             let file_type = entry.file_type()?;
             if file_type.is_dir() {
                 visit_stderr_files(&entry.path(), syn_version)?;
-            } else if file_type.is_file() && entry.path().extension() == Some(OsStr::new("stderr")) {
+            } else if file_type.is_file() && entry.path().extension() == Some(OsStr::new("stderr"))
+            {
                 fix_file(&entry.path(), syn_version)?;
             }
         }

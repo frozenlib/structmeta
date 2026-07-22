@@ -1,5 +1,5 @@
 use structmeta::StructMeta;
-use syn::{parse_quote, Attribute, LitInt, LitStr};
+use syn::{Attribute, LitInt, LitStr, parse_quote};
 
 fn main() {
     #[derive(StructMeta, Debug)]

@@ -1,8 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
-    punctuated::Punctuated, DeriveInput, Path, PathArguments, PathSegment, Result, Token, Type,
-    WherePredicate,
+    DeriveInput, Path, PathArguments, PathSegment, Result, Token, Type, WherePredicate,
+    punctuated::Punctuated,
 };
 
 macro_rules! bail {

@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use std::{collections::HashMap, fmt::Debug, iter::FromIterator};
 use structmeta::*;
-use syn::{parse::Parse, parse_quote, Attribute, Expr, LitInt, LitStr};
+use syn::{Attribute, Expr, LitInt, LitStr, parse::Parse, parse_quote};
 
 macro_rules! pq {
     ($($tt:tt)*) =>  { parse_quote!($($tt)*) }
@@ -525,8 +525,8 @@ fn test_expr_or_name_args_similar() {
 }
 #[test]
 fn test_unnamed_similar_name_value() {
-    use syn::parse_quote;
     use syn::Expr;
+    use syn::parse_quote;
 
     #[derive(StructMeta, PartialEq, Debug)]
     struct Attr(Option<Expr>);
