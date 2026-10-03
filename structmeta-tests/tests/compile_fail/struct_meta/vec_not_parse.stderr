@@ -1,25 +1,23 @@
-error[E0277]: the trait bound `NotParse: syn::parse::Parse` is not satisfied
+error[E0277]: the trait bound `NotParse: structmeta::helpers::exports::syn::parse::Parse` is not satisfied
  --> tests/compile_fail/struct_meta/vec_not_parse.rs:3:5
   |
 3 |     x: Vec<NotParse>,
   |     ^ unsatisfied trait bound
   |
-help: the trait `syn::parse::Parse` is not implemented for `NotParse`
+help: the trait `structmeta::helpers::exports::syn::parse::Parse` is not implemented for `NotParse`
  --> tests/compile_fail/struct_meta/vec_not_parse.rs:5:1
   |
 5 | struct NotParse;
   | ^^^^^^^^^^^^^^^
-  = help: the following other types implement trait `syn::parse::Parse`:
+  = help: the following other types implement trait `structmeta::helpers::exports::syn::parse::Parse`:
             Box<T>
             Example
             Option<T>
-            Option<syn::expr::Label>
-            Option<syn::generics::BoundLifetimes>
-            Option<syn::generics::WhereClause>
-            Option<syn::ty::Abi>
-            proc_macro2::Group
-          and $N others
-note: required by a bound in `syn::punctuated::Punctuated::<T, P>::parse_terminated`
+            Option<structmeta::helpers::exports::syn::Abi>
+            Option<structmeta::helpers::exports::syn::BoundLifetimes>
+            Option<structmeta::helpers::exports::syn::Label>
+            Option<structmeta::helpers::exports::syn::WhereClause>
+note: required by a bound in `structmeta::helpers::exports::syn::punctuated::Punctuated::<T, P>::parse_terminated`
  --> $CARGO/syn-$VERSION/src/punctuated.rs
   |
   |     pub fn parse_terminated(input: ParseStream) -> Result<Self>

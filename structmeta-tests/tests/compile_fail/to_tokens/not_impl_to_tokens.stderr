@@ -1,15 +1,15 @@
-error[E0277]: the trait bound `X: quote::to_tokens::ToTokens` is not satisfied
+error[E0277]: the trait bound `X: structmeta::helpers::exports::quote::ToTokens` is not satisfied
  --> tests/compile_fail/to_tokens/not_impl_to_tokens.rs:4:5
   |
 4 |     x: X,
   |     ^ unsatisfied trait bound
   |
-help: the trait `quote::to_tokens::ToTokens` is not implemented for `X`
+help: the trait `structmeta::helpers::exports::quote::ToTokens` is not implemented for `X`
  --> tests/compile_fail/to_tokens/not_impl_to_tokens.rs:7:1
   |
 7 | struct X;
   | ^^^^^^^^
-  = help: the following other types implement trait `quote::to_tokens::ToTokens`:
+  = help: the following other types implement trait `structmeta::helpers::exports::quote::ToTokens`:
             &T
             &mut T
             Arc<T>

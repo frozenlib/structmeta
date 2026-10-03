@@ -1,22 +1,20 @@
-error[E0277]: the trait bound `Flag: syn::parse::Parse` is not satisfied
+error[E0277]: the trait bound `Flag: structmeta::helpers::exports::syn::parse::Parse` is not satisfied
  --> tests/compile_fail/struct_meta/hash_map_flag.rs:6:27
   |
 6 |     rest: HashMap<String, Flag>,
-  |     ----                  ^^^^ the trait `syn::parse::Parse` is not implemented for `Flag`
+  |     ----                  ^^^^ the trait `structmeta::helpers::exports::syn::parse::Parse` is not implemented for `Flag`
   |     |
   |     required by a bound introduced by this call
   |
-  = help: the following other types implement trait `syn::parse::Parse`:
+  = help: the following other types implement trait `structmeta::helpers::exports::syn::parse::Parse`:
             Box<T>
             Example
             Option<T>
-            Option<syn::expr::Label>
-            Option<syn::generics::BoundLifetimes>
-            Option<syn::generics::WhereClause>
-            Option<syn::ty::Abi>
-            proc_macro2::Group
-          and $N others
-note: required by a bound in `syn::parse::ParseBuffer::<'a>::parse`
+            Option<structmeta::helpers::exports::syn::Abi>
+            Option<structmeta::helpers::exports::syn::BoundLifetimes>
+            Option<structmeta::helpers::exports::syn::Label>
+            Option<structmeta::helpers::exports::syn::WhereClause>
+note: required by a bound in `structmeta::helpers::exports::syn::parse::ParseBuffer::<'a>::parse`
  --> $CARGO/syn-$VERSION/src/parse.rs
   |
   |     pub fn parse<T: Parse>(&self) -> Result<T> {
